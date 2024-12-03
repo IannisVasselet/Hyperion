@@ -1,0 +1,11 @@
+Django
+djangorestframework
+celery
+django-celery-beat
+django-channels
+paramiko
+psycopg2-binary
+gunicorn
+pytest
+pytest-django
+selenium
