@@ -17,3 +17,17 @@ class Network(models.Model):
     received = models.BigIntegerField()
     sent = models.BigIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+class CPUUsage(models.Model):
+    usage = models.FloatField()
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+class MemoryUsage(models.Model):
+    usage = models.FloatField()
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+class NetworkUsage(models.Model):
+    interface = models.CharField(max_length=100)
+    received = models.BigIntegerField()
+    sent = models.BigIntegerField()
+    recorded_at = models.DateTimeField(auto_now_add=True)

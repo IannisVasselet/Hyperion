@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -134,8 +135,23 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery settings
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# hyperion/settings.py
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BEAT_SCHEDULE = {
+    'record-cpu-usage-every-minute': {
+        'task': 'api.tasks.record_cpu_usage',
+        'schedule': crontab(minute='*/1'),
+    },
+    'record-memory-usage-every-minute': {
+        'task': 'api.tasks.record_memory_usage',
+        'schedule': crontab(minute='*/1'),
+    },
+    'record-network-usage-every-minute': {
+        'task': 'api.tasks.record_network_usage',
+        'schedule': crontab(minute='*/1'),
+    },
+}
 
 # Channels settings
 ASGI_APPLICATION = 'hyperion.asgi.application'
@@ -147,3 +163,15 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Slack webhook URL
+SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/your/webhook/url'
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.your-email-provider.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@example.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'
+DEFAULT_FROM_EMAIL = 'your-email@example.com'
