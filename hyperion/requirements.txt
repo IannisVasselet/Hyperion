@@ -1,11 +1,16 @@
-Django
+Django>=3.2,<4.0
 djangorestframework
 celery
 django-celery-beat
+django-celery-results
 django-channels
+channels
 paramiko
 psycopg2-binary
 gunicorn
 pytest
 pytest-django
 selenium
+psutil
+paramiko
+redis

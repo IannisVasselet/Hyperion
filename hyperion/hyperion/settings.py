@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'api',
     'django_celery_beat',
     'django_celery_results',
     'channels',
@@ -79,14 +80,13 @@ WSGI_APPLICATION = 'hyperion.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# hyperion/settings.py
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'hyperion_db',
         'USER': 'your_db_user',
         'PASSWORD': 'your_db_password',
-        'HOST': 'localhost',
+        'HOST': 'db',  # Utiliser le nom de service Docker pour PostgreSQL
         'PORT': '5432',
     }
 }
