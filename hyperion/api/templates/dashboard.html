@@ -33,10 +33,13 @@
             <canvas id="networkChart"></canvas>
         </div>
     </main>
+    <script id="cpu-data" type="application/json">{{ cpu_usage|safe }}</script>
+    <script id="memory-data" type="application/json">{{ memory_usage|safe }}</script>
+    <script id="network-data" type="application/json">{{ network_usage|safe }}</script>
     <script>
-        const cpuData = {{ cpu_usage|safe }};
-        const memoryData = {{ memory_usage|safe }};
-        const networkData = {{ network_usage|safe }};
+        const cpuData = JSON.parse(document.getElementById('cpu-data').textContent);
+        const memoryData = JSON.parse(document.getElementById('memory-data').textContent);
+        const networkData = JSON.parse(document.getElementById('network-data').textContent);
 
         const cpuChartCtx = document.getElementById('cpuChart').getContext('2d');
         const memoryChartCtx = document.getElementById('memoryChart').getContext('2d');

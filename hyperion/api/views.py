@@ -1,8 +1,12 @@
 # api/views.py
 from django.shortcuts import render
+from django.core.serializers import serialize
+import json
+
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
 from .models import Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage
 from .serializers import ProcessSerializer, ServiceSerializer, NetworkSerializer
 from .utils import get_processes, get_services, execute_ssh_command
@@ -56,12 +60,12 @@ class SSHCommandView(APIView):
         return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
 
 def dashboard(request):
-    cpu_usage = CPUUsage.objects.all()
-    memory_usage = MemoryUsage.objects.all()
-    network_usage = NetworkUsage.objects.all()
+    cpu_usage = list(CPUUsage.objects.values())
+    memory_usage = list(MemoryUsage.objects.values())
+    network_usage = list(NetworkUsage.objects.values())
     context = {
-        'cpu_usage': cpu_usage,
-        'memory_usage': memory_usage,
-        'network_usage': network_usage,
+        'cpu_usage': json.dumps(cpu_usage, default=str),
+        'memory_usage': json.dumps(memory_usage, default=str),
+        'network_usage': json.dumps(network_usage, default=str),
     }
     return render(request, 'dashboard.html', context)
