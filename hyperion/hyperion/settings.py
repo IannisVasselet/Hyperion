@@ -88,7 +88,8 @@ DATABASES = {
         'NAME': 'hyperion_db',
         'USER': 'your_db_user',
         'PASSWORD': 'your_db_password',
-        'HOST': 'db',  # Utiliser le nom de service Docker pour PostgreSQL
+        # 'HOST': 'db',  # Utiliser le nom de service Docker pour PostgreSQL
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
