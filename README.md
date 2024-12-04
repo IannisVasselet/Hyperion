@@ -66,3 +66,10 @@ hyperion/
 6. **requirements.txt** : Liste des dépendances Python pour le projet.
 
 7. **env/** : Environnement virtuel Python.
+
+### Commande de lancement du server compatible asgi 
+   
+   ```bash
+   daphne -b 127.0.0.1 -p 8000 hyperion.asgi:application
+   ```
+   

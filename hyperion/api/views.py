@@ -6,16 +6,30 @@ import json
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from .models import Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage
 from .serializers import ProcessSerializer, ServiceSerializer, NetworkSerializer
-from .utils import get_processes, get_services, execute_ssh_command
+from .utils import get_processes, stop_process, change_process_priority, get_services, execute_ssh_command
 from .tasks import send_slack_notification, send_email_notification
 
 class ProcessViewSet(viewsets.ViewSet):
     def list(self, request):
         processes = get_processes()
         return Response(processes)
+
+    @action(detail=True, methods=['post'])
+    def stop(self, request, pk=None):
+        if stop_process(int(pk)):
+            return Response({'status': 'process stopped'})
+        return Response({'error': 'process not found'}, status=404)
+
+    @action(detail=True, methods=['post'])
+    def priority(self, request, pk=None):
+        priority = request.data.get('priority')
+        if change_process_priority(int(pk), int(priority)):
+            return Response({'status': 'priority changed'})
+        return Response({'error': 'process not found'}, status=404)
 
 class ServiceViewSet(viewsets.ViewSet):
     def list(self, request):
