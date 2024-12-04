@@ -128,3 +128,77 @@ En bref, **Hyperion** permet une gestion simplifiée, sécurisée et visuellemen
 ---
 
 Ce plan est modulable selon tes priorités et contraintes spécifiques. Si besoin, je peux détailler certaines étapes ou t’aider à structurer un sprint de développement.
+
+# diagramme Architecture
+```mermaid
+architecture-beta
+    group backend(cloud)[Backend]
+    group frontend(cloud)[Frontend]
+    group background_tasks(cloud)[Taches_en_Arriere_Plan]
+    group websockets(cloud)[WebSockets]
+    group configuration(cloud)[Configuration]
+    group containerization(cloud)[Conteneurisation]
+
+    service django(server)[Django] in backend
+    service api(server)[API] in backend
+    service endpoints(server)[Endpoints] in backend
+    service models(database)[Modeles] in backend
+    service views(server)[Vues] in backend
+    service serializers(server)[Serialiseurs] in backend
+    service utilities(server)[Utilitaires] in backend
+
+    service templates(server)[Django_Templates] in frontend
+    service dashboard_html(server)[dashboard_html] in frontend
+    service javascript(server)[JavaScript] in frontend
+    service css(server)[CSS] in frontend
+
+    service celery(server)[Celery] in background_tasks
+    service tasks(server)[Taches] in background_tasks
+    service broker(database)[Broker] in background_tasks
+    service scheduler(server)[Scheduler] in background_tasks
+
+    service channels(server)[Django_Channels] in websockets
+    service consumers(server)[Consommateurs] in websockets
+    service websocket_routes(server)[Routes_WebSocket] in websockets
+
+    service settings(server)[settings_py] in configuration
+    service asgi(server)[asgi_py] in configuration
+    service celery_config(server)[celery_py] in configuration
+    service wsgi(server)[wsgi_py] in configuration
+
+    service dockerfile(server)[Dockerfile] in containerization
+    service docker_compose(server)[docker_compose_yml] in containerization
+
+    django:L -- R:views
+    views:L -- R:templates
+    templates:L -- R:dashboard_html
+    dashboard_html:L -- R:javascript
+    javascript:L -- R:css
+
+    django:L -- R:api
+    api:L -- R:endpoints
+    endpoints:L -- R:models
+    models:L -- R:serializers
+    serializers:L -- R:utilities
+
+    django:L -- R:celery
+    celery:L -- R:tasks
+    tasks:L -- R:broker
+    broker:L -- R:scheduler
+
+    django:L -- R:channels
+    channels:L -- R:consumers
+    consumers:L -- R:websocket_routes
+
+    django:L -- R:settings
+    settings:L -- R:asgi
+    asgi:L -- R:celery_config
+    celery_config:L -- R:wsgi
+
+    django:L -- R:dockerfile
+    dockerfile:L -- R:docker_compose
+
+```
+
+Image de l'architecture de l'application Hyperion
+![architecture](architecture-beta.png)

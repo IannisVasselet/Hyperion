@@ -1,97 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hyperion Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script id="cpu-data" type="application/json">
+        [{"recorded_at": "2023-10-01T00:00:00Z", "usage": 20}]
+    </script>
+    <script id="memory-data" type="application/json">
+        [{"recorded_at": "2023-10-01T00:00:00Z", "usage": 50}]
+    </script>
+    <script id="network-data" type="application/json">
+        [{"recorded_at": "2023-10-01T00:00:00Z", "usage": 10}]
+    </script>
     <style>
-        .widget {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      .widget {
+        border: 1px solid #ccc;
+        padding: 20px;
+        margin: 20px;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      .dark-mode {
+        background-color: #333;
+        color: #fff;
+      }
+      .dark-mode .widget {
+        background-color: #444;
+        border-color: #555;
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 10px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <h1>Hyperion Dashboard</h1>
+      <h1>Hyperion Dashboard</h1>
+      <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
     </header>
     <main>
-        <div class="widget">
-            <h3>CPU Usage</h3>
-            <canvas id="cpuChart"></canvas>
-        </div>
-        <div class="widget">
-            <h3>Memory Usage</h3>
-            <canvas id="memoryChart"></canvas>
-        </div>
-        <div class="widget">
-            <h3>Network Usage</h3>
-            <canvas id="networkChart"></canvas>
-        </div>
+      <div class="widget">
+        <h3>CPU Usage</h3>
+        <canvas id="cpuChart"></canvas>
+      </div>
+      <div class="widget">
+        <h3>Memory Usage</h3>
+        <canvas id="memoryChart"></canvas>
+      </div>
+      <div class="widget">
+        <h3>Network Usage</h3>
+        <canvas id="networkChart"></canvas>
+      </div>
+      <div class="widget">
+        <h3>Processes</h3>
+        <ul id="processesList"></ul>
+      </div>
+      <div class="widget">
+        <h3>Services</h3>
+        <ul id="servicesList"></ul>
+      </div>
     </main>
-    <script id="cpu-data" type="application/json">{{ cpu_usage|safe }}</script>
-    <script id="memory-data" type="application/json">{{ memory_usage|safe }}</script>
-    <script id="network-data" type="application/json">{{ network_usage|safe }}</script>
     <script>
-        const cpuData = JSON.parse(document.getElementById('cpu-data').textContent);
-        const memoryData = JSON.parse(document.getElementById('memory-data').textContent);
-        const networkData = JSON.parse(document.getElementById('network-data').textContent);
+      const cpuData = JSON.parse(
+        document.getElementById("cpu-data").textContent
+      );
+      const memoryData = JSON.parse(
+        document.getElementById("memory-data").textContent
+      );
+      const networkData = JSON.parse(
+        document.getElementById("network-data").textContent
+      );
 
-        const cpuChartCtx = document.getElementById('cpuChart').getContext('2d');
-        const memoryChartCtx = document.getElementById('memoryChart').getContext('2d');
-        const networkChartCtx = document.getElementById('networkChart').getContext('2d');
+      const cpuChartCtx = document.getElementById("cpuChart").getContext("2d");
+      const memoryChartCtx = document
+        .getElementById("memoryChart")
+        .getContext("2d");
+      const networkChartCtx = document
+        .getElementById("networkChart")
+        .getContext("2d");
 
-        new Chart(cpuChartCtx, {
-            type: 'line',
-            data: {
-                labels: cpuData.map(d => d.recorded_at),
-                datasets: [{
-                    label: 'CPU Usage',
-                    data: cpuData.map(d => d.usage),
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    fill: false,
-                }]
-            }
+      new Chart(cpuChartCtx, {
+        type: "line",
+        data: {
+          labels: cpuData.map((d) => d.recorded_at),
+          datasets: [
+            {
+              label: "CPU Usage",
+              data: cpuData.map((d) => d.usage),
+              borderColor: "rgba(75, 192, 192, 1)",
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              fill: false,
+            },
+          ],
+        },
+      });
+
+      new Chart(memoryChartCtx, {
+        type: "line",
+        data: {
+          labels: memoryData.map((d) => d.recorded_at),
+          datasets: [
+            {
+              label: "Memory Usage",
+              data: memoryData.map((d) => d.usage),
+              borderColor: "rgba(153, 102, 255, 1)",
+              backgroundColor: "rgba(153, 102, 255, 0.2)",
+              fill: false,
+            },
+          ],
+        },
+      });
+
+      new Chart(networkChartCtx, {
+        type: "line",
+        data: {
+          labels: networkData.map((d) => d.recorded_at),
+          datasets: [
+            {
+              label: "Received",
+              data: networkData.map((d) => d.received),
+              borderColor: "rgba(255, 99, 132, 1)",
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              fill: false,
+            },
+            {
+              label: "Sent",
+              data: networkData.map((d) => d.sent),
+              borderColor: "rgba(54, 162, 235, 1)",
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              fill: false,
+            },
+          ],
+        },
+      });
+
+      function toggleTheme() {
+        document.body.classList.toggle("dark-mode");
+      }
+
+      const processesSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/processes/"
+      );
+      processesSocket.onmessage = function (e) {
+        const processes = JSON.parse(e.data);
+        const processesList = document.getElementById("processesList");
+        processesList.innerHTML = "";
+        processes.forEach((process) => {
+          const li = document.createElement("li");
+          li.textContent = `${process.name} (PID: ${process.pid}, Status: ${process.status})`;
+          processesList.appendChild(li);
         });
+      };
 
-        new Chart(memoryChartCtx, {
-            type: 'line',
-            data: {
-                labels: memoryData.map(d => d.recorded_at),
-                datasets: [{
-                    label: 'Memory Usage',
-                    data: memoryData.map(d => d.usage),
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                    fill: false,
-                }]
-            }
+      const servicesSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/services/"
+      );
+      servicesSocket.onmessage = function (e) {
+        const services = JSON.parse(e.data);
+        const servicesList = document.getElementById("servicesList");
+        servicesList.innerHTML = "";
+        services.forEach((service) => {
+          const li = document.createElement("li");
+          li.textContent = `${service.name} (Status: ${service.status})`;
+          servicesList.appendChild(li);
         });
+      };
 
-        new Chart(networkChartCtx, {
-            type: 'line',
-            data: {
-                labels: networkData.map(d => d.recorded_at),
-                datasets: [{
-                    label: 'Received',
-                    data: networkData.map(d => d.received),
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    fill: false,
-                }, {
-                    label: 'Sent',
-                    data: networkData.map(d => d.sent),
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    fill: false,
-                }]
-            }
-        });
+      const networkSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/networks/"
+      );
+      networkSocket.onmessage = function (e) {
+        const networkUsage = JSON.parse(e.data);
+        const networkChart = Chart.getChart("networkChart");
+        networkChart.data.labels = networkUsage.map((d) => d.recorded_at);
+        networkChart.data.datasets[0].data = networkUsage.map(
+          (d) => d.received
+        );
+        networkChart.data.datasets[1].data = networkUsage.map((d) => d.sent);
+        networkChart.update();
+      };
     </script>
-</body>
+  </body>
 </html>

@@ -22,6 +22,16 @@ def get_services():
             })
     return services
 
+def get_network_usage():
+    network_stats = []
+    for interface, stats in psutil.net_io_counters(pernic=True).items():
+        network_stats.append({
+            'interface': interface,
+            'received': stats.bytes_recv,
+            'sent': stats.bytes_sent
+        })
+    return network_stats
+
 def execute_ssh_command(host, port, username, password, command):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

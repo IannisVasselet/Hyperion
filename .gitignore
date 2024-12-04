@@ -1,1 +1,8 @@
 .DS_store
+env
+
+# Django project template files
+*.log
+*.pot
+*.pyc
+__pycache__/
