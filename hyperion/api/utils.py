@@ -2,6 +2,9 @@
 import psutil
 import paramiko
 import subprocess
+import socket
+import netifaces
+from typing import List, Dict
 
 def get_processes():
     processes = []
@@ -89,6 +92,98 @@ def get_network_usage():
             'sent': stats.bytes_sent
         })
     return network_stats
+
+def block_ip(ip_address: str) -> bool:
+    """Block an IP address using iptables"""
+    try:
+        subprocess.check_call([
+            'sudo', 'iptables', 
+            '-A', 'INPUT', 
+            '-s', ip_address, 
+            '-j', 'DROP'
+        ])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+def unblock_ip(ip_address: str) -> bool:
+    """Unblock a previously blocked IP address"""
+    try:
+        subprocess.check_call([
+            'sudo', 'iptables', 
+            '-D', 'INPUT', 
+            '-s', ip_address, 
+            '-j', 'DROP'
+        ])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+def block_port(port: int, protocol: str = 'tcp') -> bool:
+    """Block a specific port using iptables"""
+    try:
+        subprocess.check_call([
+            'sudo', 'iptables',
+            '-A', 'INPUT',
+            '-p', protocol,
+            '--dport', str(port),
+            '-j', 'DROP'
+        ])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+def get_network_interfaces() -> List[Dict]:
+    """Get detailed information about network interfaces"""
+    interfaces = []
+    for iface in netifaces.interfaces():
+        try:
+            addrs = netifaces.ifaddresses(iface)
+            ipv4 = addrs.get(netifaces.AF_INET, [])
+            ipv6 = addrs.get(netifaces.AF_INET6, [])
+            
+            interface_info = {
+                'name': iface,
+                'ipv4': [addr['addr'] for addr in ipv4],
+                'ipv6': [addr['addr'] for addr in ipv6],
+                'is_up': 'up' in psutil.net_if_stats()[iface].flags,
+                'speed': psutil.net_if_stats()[iface].speed,
+                'mtu': psutil.net_if_stats()[iface].mtu
+            }
+            interfaces.append(interface_info)
+        except Exception:
+            continue
+    return interfaces
+
+def configure_interface(interface_name: str, config: Dict) -> bool:
+    """Configure a network interface"""
+    try:
+        # Set IP address
+        if 'ip_address' in config:
+            subprocess.check_call([
+                'sudo', 'ip', 'addr', 'add',
+                config['ip_address'],
+                'dev', interface_name
+            ])
+        
+        # Set MTU
+        if 'mtu' in config:
+            subprocess.check_call([
+                'sudo', 'ip', 'link', 'set',
+                interface_name, 'mtu', str(config['mtu'])
+            ])
+        
+        # Set interface up/down
+        if 'up' in config:
+            action = 'up' if config['up'] else 'down'
+            subprocess.check_call([
+                'sudo', 'ip', 'link', 'set',
+                interface_name, action
+            ])
+            
+        return True
+    except subprocess.CalledProcessError:
+        return False
 
 def execute_ssh_command(host, port, username, password, command):
     ssh = paramiko.SSHClient()

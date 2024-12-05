@@ -93,3 +93,73 @@ HYPERION.md
 
 ### 5.3 Suivi
 - Mettre en place des outils de monitoring (comme Grafana avec Prometheus).
+
+
+### MISSING AND ALREADY DID
+Based on the project requirements and your current implementation, here are the missing features:
+
+1. **Processus Management**:
+- Already implemented:
+  - Listing processes
+  - Stopping processes
+  - Priority modification
+  - Real-time updates via WebSocket
+  - Sorting and filtering
+
+2. **Services Management**:
+- Already implemented:
+  - Listing services
+  - Start/Stop/Restart functionality
+  - Real-time updates via WebSocket
+  - Status indicators
+
+3. **Files Management** (Completely Missing):
+- Need to implement:
+```python
+# api/models.py
+class File(models.Model):
+    path = models.CharField(max_length=255)
+    name = models.CharField(max_length=100)
+    size = models.BigIntegerField()
+    modified_at = models.DateTimeField()
+```
+- Add file operations in 
+
+utils.py
+
+
+- Create FileViewSet in 
+
+views.py
+
+
+- Add drag-and-drop interface in dashboard.html
+
+4. **Network Management**:
+- Already implemented:
+  - Network usage monitoring
+  - Real-time graphs
+- Missing:
+  - IP blocking functionality
+  - Port management
+  - Network interface configuration
+
+5. **Security Features** (Missing):
+- Two-factor authentication
+- Role-based permissions
+- IP whitelisting
+- Audit logging
+
+6. **Remote Management** (Partially implemented):
+- Already implemented:
+  - Basic SSH command execution
+- Missing:
+  - Multi-server management
+  - Secure credential storage
+  - Server health monitoring
+
+7. **Additional Features** (Missing):
+- Task scheduling interface
+- Email/Slack notification configuration UI
+- System temperature monitoring
+- Predictive analysis for resource usage

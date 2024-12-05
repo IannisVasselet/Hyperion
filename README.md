@@ -67,9 +67,15 @@ hyperion/
 
 7. **env/** : Environnement virtuel Python.
 
-### Commande de lancement du server compatible asgi 
+### Commande de lancement en developpement
    
+   Cette commande permet de lancer le serveur compatible asgi pour le projet Hyperion.
    ```bash
    daphne -b 127.0.0.1 -p 8000 hyperion.asgi:application
    ```
    
+   Cette commande permet de lancer le celery worker pour le projet Hyperion.
+   Le celery worker permet de lancer les tâches en arrière-plan.
+   ```bash
+   celery -A hyperion worker --loglevel=info
+   ```

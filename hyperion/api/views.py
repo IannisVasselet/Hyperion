@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 
 from .models import Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage
 from .serializers import ProcessSerializer, ServiceSerializer, NetworkSerializer
-from .utils import get_processes, stop_process, change_process_priority, get_services, execute_ssh_command
+from .utils import get_processes, stop_process, change_process_priority, get_services, execute_ssh_command, block_ip, unblock_ip, block_port, get_network_interfaces, configure_interface
 from .tasks import send_slack_notification, send_email_notification
 
 class ProcessViewSet(viewsets.ViewSet):
@@ -39,6 +39,41 @@ class ServiceViewSet(viewsets.ViewSet):
 class NetworkViewSet(viewsets.ModelViewSet):
     queryset = Network.objects.all()
     serializer_class = NetworkSerializer
+
+    @action(detail=False, methods=['post'])
+    def block_ip(self, request):
+        ip_address = request.data.get('ip_address')
+        if block_ip(ip_address):
+            return Response({'status': 'IP blocked'})
+        return Response({'error': 'Failed to block IP'}, status=400)
+
+    @action(detail=False, methods=['post'])
+    def unblock_ip(self, request):
+        ip_address = request.data.get('ip_address')
+        if unblock_ip(ip_address):
+            return Response({'status': 'IP unblocked'})
+        return Response({'error': 'Failed to unblock IP'}, status=400)
+
+    @action(detail=False, methods=['post'])
+    def block_port(self, request):
+        port = request.data.get('port')
+        protocol = request.data.get('protocol', 'tcp')
+        if block_port(port, protocol):
+            return Response({'status': 'Port blocked'})
+        return Response({'error': 'Failed to block port'}, status=400)
+
+    @action(detail=False, methods=['get'])
+    def interfaces(self, request):
+        interfaces = get_network_interfaces()
+        return Response(interfaces)
+
+    @action(detail=False, methods=['post'])
+    def configure_interface(self, request):
+        interface = request.data.get('interface')
+        config = request.data.get('config', {})
+        if configure_interface(interface, config):
+            return Response({'status': 'Interface configured'})
+        return Response({'error': 'Failed to configure interface'}, status=400)
 
 class SlackNotificationView(APIView):
     def post(self, request):

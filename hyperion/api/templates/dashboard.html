@@ -172,6 +172,13 @@
         background-color: #f44336;
         color: white;
       }
+      .process-table tr {
+        transition: all 0.3s ease;
+      }
+
+      .scrollable-list {
+        scroll-behavior: smooth;
+      }
     </style>
   </head>
   <body>
@@ -251,224 +258,242 @@
     </main>
 
     <script>
-              const cpuData = JSON.parse(
-                document.getElementById("cpu-data").textContent
-              );
-              const memoryData = JSON.parse(
-                document.getElementById("memory-data").textContent
-              );
-              const networkData = JSON.parse(
-                document.getElementById("network-data").textContent
-              );
+                const cpuData = JSON.parse(
+                  document.getElementById("cpu-data").textContent
+                );
+                const memoryData = JSON.parse(
+                  document.getElementById("memory-data").textContent
+                );
+                const networkData = JSON.parse(
+                  document.getElementById("network-data").textContent
+                );
 
-              const cpuChartCtx = document.getElementById("cpuChart").getContext("2d");
-              const memoryChartCtx = document
-                .getElementById("memoryChart")
-                .getContext("2d");
-              const networkChartCtx = document
-                .getElementById("networkChart")
-                .getContext("2d");
+                const cpuChartCtx = document.getElementById("cpuChart").getContext("2d");
+                const memoryChartCtx = document
+                  .getElementById("memoryChart")
+                  .getContext("2d");
+                const networkChartCtx = document
+                  .getElementById("networkChart")
+                  .getContext("2d");
 
-              new Chart(cpuChartCtx, {
-                type: "line",
-                data: {
-                  labels: cpuData.map((d) => d.recorded_at),
-                  datasets: [
-                    {
-                      label: "CPU Usage",
-                      data: cpuData.map((d) => d.usage),
-                      borderColor: "rgba(75, 192, 192, 1)",
-                      backgroundColor: "rgba(75, 192, 192, 0.2)",
-                      fill: false,
-                    },
-                  ],
-                },
-              });
+                new Chart(cpuChartCtx, {
+                  type: "line",
+                  data: {
+                    labels: cpuData.map((d) => d.recorded_at),
+                    datasets: [
+                      {
+                        label: "CPU Usage",
+                        data: cpuData.map((d) => d.usage),
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        fill: false,
+                      },
+                    ],
+                  },
+                });
 
-              new Chart(memoryChartCtx, {
-                type: "line",
-                data: {
-                  labels: memoryData.map((d) => d.recorded_at),
-                  datasets: [
-                    {
-                      label: "Memory Usage",
-                      data: memoryData.map((d) => d.usage),
-                      borderColor: "rgba(153, 102, 255, 1)",
-                      backgroundColor: "rgba(153, 102, 255, 0.2)",
-                      fill: false,
-                    },
-                  ],
-                },
-              });
+                new Chart(memoryChartCtx, {
+                  type: "line",
+                  data: {
+                    labels: memoryData.map((d) => d.recorded_at),
+                    datasets: [
+                      {
+                        label: "Memory Usage",
+                        data: memoryData.map((d) => d.usage),
+                        borderColor: "rgba(153, 102, 255, 1)",
+                        backgroundColor: "rgba(153, 102, 255, 0.2)",
+                        fill: false,
+                      },
+                    ],
+                  },
+                });
 
-              new Chart(networkChartCtx, {
-                type: "line",
-                data: {
-                  labels: networkData.map((d) => d.recorded_at),
-                  datasets: [
-                    {
-                      label: "Received",
-                      data: networkData.map((d) => d.received),
-                      borderColor: "rgba(255, 99, 132, 1)",
-                      backgroundColor: "rgba(255, 99, 132, 0.2)",
-                      fill: false,
-                    },
-                    {
-                      label: "Sent",
-                      data: networkData.map((d) => d.sent),
-                      borderColor: "rgba(54, 162, 235, 1)",
-                      backgroundColor: "rgba(54, 162, 235, 0.2)",
-                      fill: false,
-                    },
-                  ],
-                },
-              });
+                new Chart(networkChartCtx, {
+                  type: "line",
+                  data: {
+                    labels: networkData.map((d) => d.recorded_at),
+                    datasets: [
+                      {
+                        label: "Received",
+                        data: networkData.map((d) => d.received),
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        fill: false,
+                      },
+                      {
+                        label: "Sent",
+                        data: networkData.map((d) => d.sent),
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        fill: false,
+                      },
+                    ],
+                  },
+                });
 
-              function toggleTheme() {
-                document.body.classList.toggle("dark-mode");
-              }
+                function toggleTheme() {
+                  document.body.classList.toggle("dark-mode");
+                }
 
-              {% comment %}  WebSockets code for updating processes {% endcomment %}
-              const processesSocket = new WebSocket(
-                "ws://" + window.location.host + "/ws/processes/"
-              );
+                {% comment %}  WebSockets code for updating processes {% endcomment %}
+                const processesSocket = new WebSocket(
+                    "ws://" + window.location.host + "/ws/processes/"
+                );
 
-              processesSocket.onmessage = function (e) {
-                const processes = JSON.parse(e.data);
-                updateProcessTable(processes);
-              };
+                processesSocket.onmessage = function(e) {
+                    const processes = JSON.parse(e.data);
+                    if (Array.isArray(processes)) {
+                        updateProcessTable(processes);
+                    }
+                };
 
-              function updateProcessTable(processes) {
-                const tbody = document.getElementById("processesTableBody");
-                tbody.innerHTML = "";
+                function updateProcessTable(processes) {
+                    const tbody = document.getElementById("processesTableBody");
+                    const currentFilter = document.getElementById("processFilter").value.toLowerCase();
+                    const currentSort = document.getElementById("processSorting").value;
 
-                processes.forEach((process) => {
-                  const row = document.createElement("tr");
-                  row.innerHTML = `
-              <td>${process.name}</td>
-              <td>${process.pid}</td>
-              <td>${process.status}</td>
-              <td>${process.cpu_percent?.toFixed(1) || 0}%</td>
-              <td>${process.memory_percent?.toFixed(1) || 0}%</td>
+                    // Preserve current scroll position
+                    const scrollPosition = tbody.parentElement.scrollTop;
+
+                    tbody.innerHTML = "";
+                    processes
+                        .filter(process => process.name.toLowerCase().includes(currentFilter))
+                        .sort((a, b) => {
+                            if (currentSort === "cpu") {
+                                return b.cpu_percent - a.cpu_percent;
+                            } else if (currentSort === "memory") {
+                                return b.memory_percent - a.memory_percent;
+                            } else {
+                                return a.name.localeCompare(b.name);
+                            }
+                        })
+                        .forEach((process) => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${process.name}</td>
+                                <td>${process.pid}</td>
+                                <td>${process.status}</td>
+                                <td>${process.cpu_percent?.toFixed(1) || 0}%</td>
+                                <td>${process.memory_percent?.toFixed(1) || 0}%</td>
+                                <td>
+                                    <button class="process-action stop-btn" onclick="stopProcess(${process.pid})">Stop</button>
+                                    <select class="process-action priority-select" onchange="changePriority(${process.pid}, this.value)">
+                                        <option value="-20">Highest</option>
+                                        <option value="0">Normal</option>
+                                        <option value="19">Lowest</option>
+                                    </select>
+                                </td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+
+                    // Restore scroll position
+                    tbody.parentElement.scrollTop = scrollPosition;
+                }
+
+                function stopProcess(pid) {
+                  processesSocket.send(
+                    JSON.stringify({
+                      action: "stop",
+                      pid: pid,
+                    })
+                  );
+                }
+
+                function changePriority(pid, priority) {
+                  processesSocket.send(
+                    JSON.stringify({
+                      action: "priority",
+                      pid: pid,
+                      priority: parseInt(priority),
+                    })
+                  );
+                }
+
+                function filterProcesses() {
+                  const filter = document
+                    .getElementById("processFilter")
+                    .value.toLowerCase();
+                  const rows = document
+                    .getElementById("processesTableBody")
+                    .getElementsByTagName("tr");
+
+                  for (let row of rows) {
+                    const name = row.cells[0].textContent.toLowerCase();
+                    row.style.display = name.includes(filter) ? "" : "none";
+                  }
+                }
+
+                function sortProcesses() {
+                  const sortBy = document.getElementById("processSorting").value;
+                  const tbody = document.getElementById("processesTableBody");
+                  const rows = Array.from(tbody.getElementsByTagName("tr"));
+
+                  rows.sort((a, b) => {
+                    const aVal =
+                      a.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
+                        .textContent;
+                    const bVal =
+                      b.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
+                        .textContent;
+                    return sortBy === "name"
+                      ? aVal.localeCompare(bVal)
+                      : parseFloat(bVal) - parseFloat(aVal);
+                  });
+
+                  rows.forEach((row) => tbody.appendChild(row));
+                }
+
+        {% comment %}  WebSockets code for updating services {% endcomment %}
+        const servicesSocket = new WebSocket(
+          "ws://" + window.location.host + "/ws/services/"
+        );
+
+        servicesSocket.onmessage = function (e) {
+          const services = JSON.parse(e.data);
+          updateServiceTable(services);
+        };
+
+        function updateServiceTable(services) {
+          const tbody = document.getElementById("servicesTableBody");
+          tbody.innerHTML = "";
+
+          services.forEach((service) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${service.name}</td>
+              <td><span class="status-badge ${service.status.toLowerCase()}">${service.status}</span></td>
               <td>
-                <button class="process-action stop-btn" onclick="stopProcess(${
-                  process.pid
-                })">Stop</button>
-                <select class="process-action priority-select" onchange="changePriority(${
-                  process.pid
-                }, this.value)">
-                  <option value="-20">Highest</option>
-                  <option value="0">Normal</option>
-                  <option value="19">Lowest</option>
-                </select>
+                <button class="service-action start-btn" onclick="controlService('${service.name}', 'start')">Start</button>
+                <button class="service-action stop-btn" onclick="controlService('${service.name}', 'stop')">Stop</button>
+                <button class="service-action restart-btn" onclick="controlService('${service.name}', 'restart')">Restart</button>
               </td>
             `;
-                  tbody.appendChild(row);
-                });
-              }
+            tbody.appendChild(row);
+          });
+        }
 
-              function stopProcess(pid) {
-                processesSocket.send(
-                  JSON.stringify({
-                    action: "stop",
-                    pid: pid,
-                  })
-                );
-              }
+        function controlService(serviceName, action) {
+          servicesSocket.send(JSON.stringify({
+            action: action,
+            service: serviceName
+          }));
+        }
 
-              function changePriority(pid, priority) {
-                processesSocket.send(
-                  JSON.stringify({
-                    action: "priority",
-                    pid: pid,
-                    priority: parseInt(priority),
-                  })
-                );
-              }
-
-              function filterProcesses() {
-                const filter = document
-                  .getElementById("processFilter")
-                  .value.toLowerCase();
-                const rows = document
-                  .getElementById("processesTableBody")
-                  .getElementsByTagName("tr");
-
-                for (let row of rows) {
-                  const name = row.cells[0].textContent.toLowerCase();
-                  row.style.display = name.includes(filter) ? "" : "none";
-                }
-              }
-
-              function sortProcesses() {
-                const sortBy = document.getElementById("processSorting").value;
-                const tbody = document.getElementById("processesTableBody");
-                const rows = Array.from(tbody.getElementsByTagName("tr"));
-
-                rows.sort((a, b) => {
-                  const aVal =
-                    a.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
-                      .textContent;
-                  const bVal =
-                    b.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
-                      .textContent;
-                  return sortBy === "name"
-                    ? aVal.localeCompare(bVal)
-                    : parseFloat(bVal) - parseFloat(aVal);
-                });
-
-                rows.forEach((row) => tbody.appendChild(row));
-              }
-
-      {% comment %}  WebSockets code for updating services {% endcomment %}
-      const servicesSocket = new WebSocket(
-        "ws://" + window.location.host + "/ws/services/"
+        const networkSocket = new WebSocket(
+          "ws://" + window.location.host + "/ws/networks/"
       );
 
-      servicesSocket.onmessage = function (e) {
-        const services = JSON.parse(e.data);
-        updateServiceTable(services);
+      networkSocket.onmessage = function (e) {
+          const data = JSON.parse(e.data);
+          if (data.usage && Array.isArray(data.usage)) {
+              const networkChart = Chart.getChart("networkChart");
+              networkChart.data.labels = data.usage.map(d => d.recorded_at);
+              networkChart.data.datasets[0].data = data.usage.map(d => d.received);
+              networkChart.data.datasets[1].data = data.usage.map(d => d.sent);
+              networkChart.update();
+          }
       };
-
-      function updateServiceTable(services) {
-        const tbody = document.getElementById("servicesTableBody");
-        tbody.innerHTML = "";
-
-        services.forEach((service) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${service.name}</td>
-            <td><span class="status-badge ${service.status.toLowerCase()}">${service.status}</span></td>
-            <td>
-              <button class="service-action start-btn" onclick="controlService('${service.name}', 'start')">Start</button>
-              <button class="service-action stop-btn" onclick="controlService('${service.name}', 'stop')">Stop</button>
-              <button class="service-action restart-btn" onclick="controlService('${service.name}', 'restart')">Restart</button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      }
-
-      function controlService(serviceName, action) {
-        servicesSocket.send(JSON.stringify({
-          action: action,
-          service: serviceName
-        }));
-      }
-
-              const networkSocket = new WebSocket(
-                "ws://" + window.location.host + "/ws/networks/"
-              );
-              networkSocket.onmessage = function (e) {
-                const networkUsage = JSON.parse(e.data);
-                const networkChart = Chart.getChart("networkChart");
-                networkChart.data.labels = networkUsage.map((d) => d.recorded_at);
-                networkChart.data.datasets[0].data = networkUsage.map(
-                  (d) => d.received
-                );
-                networkChart.data.datasets[1].data = networkUsage.map((d) => d.sent);
-                networkChart.update();
-              };
     </script>
   </body>
 </html>
