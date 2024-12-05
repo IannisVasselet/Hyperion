@@ -69,13 +69,19 @@ hyperion/
 
 ### Commande de lancement en developpement
    
-   Cette commande permet de lancer le serveur compatible asgi pour le projet Hyperion.
-   ```bash
-   daphne -b 127.0.0.1 -p 8000 hyperion.asgi:application
-   ```
-   
-   Cette commande permet de lancer le celery worker pour le projet Hyperion.
-   Le celery worker permet de lancer les tâches en arrière-plan.
-   ```bash
-   celery -A hyperion worker --loglevel=info
-   ```
+Terminal 1 : Lancer Redis
+```bash
+redis-server
+```
+Terminal 2 : Lancer le worker Celery
+```bash
+celery -A hyperion worker --loglevel=info
+```
+Terminal 3 : Lancer le beat Celery pour les tâches périodiques
+```bash
+celery -A hyperion beat --loglevel=info
+```
+Terminal 4 : Lancer le serveur Django avec Daphne
+```bash
+daphne -b 127.0.0.1 -p 8000 hyperion.asgi:application
+```

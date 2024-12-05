@@ -179,6 +179,69 @@
       .scrollable-list {
         scroll-behavior: smooth;
       }
+      .network-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .control-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      .control-group input,
+      .control-group select {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        flex: 1;
+      }
+
+      .control-group button {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .control-group button:hover {
+        background-color: #0056b3;
+      }
+
+      .dark-mode .control-group {
+        border-color: #555;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .dark-mode .control-group input,
+      .dark-mode .control-group select {
+        background-color: #333;
+        border-color: #555;
+        color: #fff;
+      }
+
+      /* Styles spécifiques pour chaque type de contrôle */
+      .control-group.ip-blocking button {
+        background-color: #dc3545;
+      }
+
+      .control-group.port-blocking button {
+        background-color: #fd7e14;
+      }
+
+      .control-group.interface-config button {
+        background-color: #28a745;
+      }
     </style>
   </head>
   <body>
@@ -244,7 +307,9 @@
       <div class="charts-container">
         <div class="widget">
           <h3>CPU Usage</h3>
-          <canvas id="cpuChart"></canvas>
+          <div style="height: 300px;">
+            <canvas id="cpuChart"></canvas>
+          </div>
         </div>
         <div class="widget">
           <h3>Memory Usage</h3>
@@ -253,6 +318,61 @@
         <div class="widget">
           <h3>Network Usage</h3>
           <canvas id="networkChart"></canvas>
+        </div>
+      </div>
+      <div class="widget">
+        <h3>Network Security</h3>
+        <div class="network-controls">
+          <!-- IP Blocking -->
+          <div class="control-group ip-blocking">
+            <input
+              type="text"
+              id="ipAddress"
+              placeholder="IP Address (ex: 192.168.1.1)"
+            />
+            <button
+              onclick="blockIP(document.getElementById('ipAddress').value)"
+            >
+              Block IP
+            </button>
+          </div>
+
+          <!-- Port Management -->
+          <div class="control-group port-blocking">
+            <input type="number" id="portNumber" placeholder="Port (1-65535)" />
+            <select id="protocol">
+              <option value="tcp">TCP</option>
+              <option value="udp">UDP</option>
+            </select>
+            <button
+              onclick="blockPort(
+                    document.getElementById('portNumber').value,
+                    document.getElementById('protocol').value
+                )"
+            >
+              Block Port
+            </button>
+          </div>
+
+          <!-- Interface Configuration -->
+          <div class="control-group interface-config">
+            <select id="networkInterface">
+              <option value="">Select Interface</option>
+            </select>
+            <input type="text" id="ipConfig" placeholder="IP Configuration" />
+            <input type="number" id="mtu" placeholder="MTU" />
+            <button
+              onclick="configureInterface(
+                    document.getElementById('networkInterface').value,
+                    {
+                        ip_address: document.getElementById('ipConfig').value,
+                        mtu: document.getElementById('mtu').value
+                    }
+                )"
+            >
+              Configure Interface
+            </button>
+          </div>
         </div>
       </div>
     </main>
@@ -268,29 +388,12 @@
                   document.getElementById("network-data").textContent
                 );
 
-                const cpuChartCtx = document.getElementById("cpuChart").getContext("2d");
                 const memoryChartCtx = document
                   .getElementById("memoryChart")
                   .getContext("2d");
                 const networkChartCtx = document
                   .getElementById("networkChart")
                   .getContext("2d");
-
-                new Chart(cpuChartCtx, {
-                  type: "line",
-                  data: {
-                    labels: cpuData.map((d) => d.recorded_at),
-                    datasets: [
-                      {
-                        label: "CPU Usage",
-                        data: cpuData.map((d) => d.usage),
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        backgroundColor: "rgba(75, 192, 192, 0.2)",
-                        fill: false,
-                      },
-                    ],
-                  },
-                });
 
                 new Chart(memoryChartCtx, {
                   type: "line",
@@ -460,7 +563,7 @@
             const tbody = document.getElementById("servicesTableBody");
             // Preserve scroll position
             const scrollPosition = tbody.parentElement.scrollTop;
-            
+
             tbody.innerHTML = "";
             services.forEach((service) => {
                 const row = document.createElement("tr");
@@ -475,7 +578,7 @@
                 `;
                 tbody.appendChild(row);
             });
-            
+
             // Restore scroll position
             tbody.parentElement.scrollTop = scrollPosition;
         }
@@ -500,6 +603,81 @@
               networkChart.data.datasets[1].data = data.usage.map(d => d.sent);
               networkChart.update();
           }
+      };
+
+      function blockIP(ip) {
+        networkSocket.send(JSON.stringify({
+          action: 'block_ip',
+          ip_address: ip
+        }));
+      }
+
+      function configureInterface(interface, config) {
+        networkSocket.send(JSON.stringify({
+          action: 'configure_interface',
+          interface: interface,
+          config: config
+        }));
+      }
+
+      // CPU WebSocket connection and chart
+      const cpuSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/cpu/"
+      );
+
+      const cpuChartCtx = document.getElementById("cpuChart").getContext("2d");
+      const cpuChart = new Chart(cpuChartCtx, {
+        type: "line",
+        data: {
+            labels: [],
+            datasets: [{
+                label: "CPU Usage",
+                data: [],
+                borderColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                fill: true,
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Usage (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time'
+                    }
+                }
+            },
+            animation: {
+                duration: 0
+            },
+            responsive: true,
+            maintainAspectRatio: false
+        }
+      });
+
+      cpuSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'cpu_usage') {
+            const cpuData = data.data;
+            
+            // Update chart data
+            cpuChart.data.labels = cpuData.map(d => {
+                const date = new Date(d.recorded_at);
+                return date.toLocaleTimeString();
+            });
+            cpuChart.data.datasets[0].data = cpuData.map(d => d.usage);
+            
+            // Update chart
+            cpuChart.update();
+        }
       };
     </script>
   </body>

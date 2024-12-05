@@ -131,3 +131,35 @@ class NetworkConsumer(AsyncWebsocketConsumer):
             'usage': await self.get_network_usage_data()
         }
         await self.send(text_data=json.dumps(network_data))
+        
+class CPUConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.is_connected = True
+        asyncio.create_task(self.send_periodic_updates())
+
+    async def disconnect(self, close_code):
+        self.is_connected = False
+
+    @sync_to_async
+    def get_cpu_data(self):
+        CPUUsage = apps.get_model('api', 'CPUUsage')
+        return [
+            {
+                'recorded_at': usage.recorded_at.isoformat(),
+                'usage': usage.usage
+            }
+            for usage in CPUUsage.objects.order_by('-recorded_at')[:50]
+        ]
+
+    async def send_periodic_updates(self):
+        while self.is_connected:
+            await self.send_cpu_data()
+            await asyncio.sleep(1)  # Update every second
+
+    async def send_cpu_data(self):
+        cpu_data = await self.get_cpu_data()
+        await self.send(text_data=json.dumps({
+            'type': 'cpu_usage',
+            'data': cpu_data
+        }))

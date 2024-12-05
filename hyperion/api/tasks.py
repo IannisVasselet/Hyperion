@@ -36,3 +36,8 @@ def send_slack_notification(message):
 def send_email_notification(subject, message, recipient_list):
     from django.core.mail import send_mail
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)
+    
+@shared_task
+def record_cpu_usage():
+    usage = psutil.cpu_percent(interval=1)
+    CPUUsage.objects.create(usage=usage)
