@@ -1,4 +1,5 @@
 # api/models.py
+from django.contrib.auth.models import User
 from django.db import models
 
 class Process(models.Model):
@@ -41,3 +42,16 @@ class FileSystem(models.Model):
     permissions = models.CharField(max_length=10)
     owner = models.CharField(max_length=50)
     group = models.CharField(max_length=50)
+    
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    two_factor_enabled = models.BooleanField(default=False)
+    last_login_ip = models.GenericIPAddressField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+class AuditLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=255)
+    details = models.TextField()
+    ip_address = models.GenericIPAddressField()
+    timestamp = models.DateTimeField(auto_now_add=True)

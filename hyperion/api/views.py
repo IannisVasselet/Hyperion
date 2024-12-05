@@ -1,6 +1,10 @@
 # api/views.py
 from django.shortcuts import render
 from django.core.serializers import serialize
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect
+from django.views import View
 import json
 
 from rest_framework import viewsets, status
@@ -8,7 +12,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .models import Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage
+from .models import (
+    Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage,
+    UserProfile, AuditLog
+    )
 from .serializers import ProcessSerializer, ServiceSerializer, NetworkSerializer
 from .utils import get_processes, stop_process, change_process_priority, get_services, execute_ssh_command, block_ip, unblock_ip, block_port, get_network_interfaces, configure_interface
 from .tasks import send_slack_notification, send_email_notification
@@ -118,3 +125,92 @@ def dashboard(request):
         'network_usage': json.dumps(network_usage, default=str),
     }
     return render(request, 'dashboard.html', context)
+
+class LoginView(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return render(request, 'registration/login.html')
+
+    def post(self, request):
+        # Change request.data to request.POST
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+        
+        if user is not None:
+            if hasattr(user, 'userprofile') and user.userprofile.two_factor_enabled:
+                # Store user ID in session for 2FA verification
+                request.session['pre_2fa_user_id'] = user.id
+                return redirect('2fa-verify')
+            
+            login(request, user)
+            # Log the successful login
+            AuditLog.objects.create(
+                user=user,
+                action='login',
+                details=f'Login from {request.META.get("REMOTE_ADDR")}',
+                ip_address=request.META.get('REMOTE_ADDR')
+            )
+            return redirect('dashboard')
+        
+        return render(request, 'registration/login.html', {
+            'error_message': 'Invalid username or password'
+        })
+
+class LogoutView(LoginRequiredMixin, View):
+    def get(self, request):
+        AuditLog.objects.create(
+            user=request.user,
+            action='logout',
+            details=f'Logout from {request.META.get("REMOTE_ADDR")}',
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        logout(request)
+        return redirect('login')
+
+class TwoFactorSetupView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(request, 'registration/2fa_setup.html')
+
+    def post(self, request):
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        user_profile.two_factor_enabled = True
+        user_profile.save()
+        
+        AuditLog.objects.create(
+            user=request.user,
+            action='2fa_setup',
+            details='2FA enabled',
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        
+        return redirect('dashboard')
+
+class TwoFactorVerifyView(View):
+    def get(self, request):
+        if not request.session.get('pre_2fa_user_id'):
+            return redirect('login')
+        return render(request, 'registration/2fa_verify.html')
+
+    def post(self, request):
+        code = request.POST.get('code')
+        user_id = request.session.get('pre_2fa_user_id')
+        
+        if not user_id:
+            return redirect('login')
+            
+        # Here you would verify the 2FA code
+        # For now, we'll just log the user in
+        user = User.objects.get(id=user_id)
+        login(request, user)
+        del request.session['pre_2fa_user_id']
+        
+        AuditLog.objects.create(
+            user=user,
+            action='2fa_verify',
+            details='2FA verification successful',
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        
+        return redirect('dashboard')
