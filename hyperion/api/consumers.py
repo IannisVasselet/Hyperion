@@ -1,4 +1,5 @@
 # hyperion/api/consumers.py
+import asyncio
 import json
 import asyncio
 
@@ -9,7 +10,7 @@ from .utils import (
     get_processes, get_services, get_network_usage, 
     stop_process, start_service, stop_service, restart_service,
     block_ip, unblock_ip, block_port, get_network_interfaces,
-    list_directory, move_file, delete_file
+    list_directory, move_file, delete_file,
 )
 
 class ProcessConsumer(AsyncWebsocketConsumer):
@@ -237,3 +238,56 @@ class FileSystemConsumer(AsyncWebsocketConsumer):
             'type': 'file_list',
             'data': files
         }))
+
+class ShellConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.shell = await asyncio.create_subprocess_shell(
+            '/bin/bash',
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+    async def disconnect(self, close_code):
+        if hasattr(self, 'shell'):
+            self.shell.terminate()
+            await self.shell.wait()
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        command = data.get('command')
+        if command:
+            try:
+                # Write command to stdin
+                self.shell.stdin.write(f"{command}\n".encode())
+                await self.shell.stdin.drain()
+                
+                # Execute command and get complete output
+                stdout, stderr = await self.shell.communicate(input=None)
+                output = []
+                
+                if stdout:
+                    output.extend(stdout.decode().splitlines())
+                if stderr:
+                    output.extend(stderr.decode().splitlines())
+
+                # Recreate shell process for next command
+                self.shell = await asyncio.create_subprocess_shell(
+                    '/bin/bash',
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+
+                # Send combined output
+                await self.send(text_data=json.dumps({
+                    'type': 'shell_output',
+                    'output': '\n'.join(output)
+                }))
+                
+            except Exception as e:
+                await self.send(text_data=json.dumps({
+                    'type': 'shell_output',
+                    'output': f"Error: {str(e)}"
+                }))

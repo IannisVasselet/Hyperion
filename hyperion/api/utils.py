@@ -219,8 +219,10 @@ def list_directory(path: str) -> List[dict]:
     """List contents of a directory"""
     contents = []
     try:
-        for item in os.listdir(path):
-            item_path = os.path.join(path, item)
+        # Ensure path is absolute
+        abs_path = os.path.abspath(path)
+        for item in os.listdir(abs_path):
+            item_path = os.path.join(abs_path, item)
             file_info = get_file_info(item_path)
             if file_info:
                 contents.append(file_info)
