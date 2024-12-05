@@ -308,6 +308,64 @@
         border-radius: 4px;
         cursor: pointer;
       }
+
+      .shell-container {
+        background: #1e1e1e;
+        border-radius: 4px;
+        padding: 10px;
+      }
+
+      .shell-output {
+        height: 300px;
+        overflow-y: auto;
+        color: #fff;
+        font-family: "Consolas", "Monaco", monospace;
+        white-space: pre-wrap;
+        padding: 10px;
+        margin-bottom: 10px;
+        line-height: 1.4;
+      }
+
+      .shell-line {
+        padding: 2px 0;
+        border-bottom: 1px solid #333;
+      }
+
+      .shell-prompt {
+        color: #4caf50;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+
+      .shell-command {
+        color: #64b5f6;
+        font-weight: bold;
+      }
+
+      .shell-error {
+        color: #ff5252;
+      }
+
+      .shell-success {
+        color: #4caf50;
+      }
+
+      .shell-directory {
+        color: #ffd700;
+      }
+
+      .shell-file {
+        color: #fff;
+      }
+
+      .shell-permission {
+        color: #ff79c6;
+      }
+
+      .shell-timestamp {
+        color: #888;
+        font-size: 0.9em;
+      }
     </style>
   </head>
   <body>
@@ -934,7 +992,7 @@
             }
             return `${size.toFixed(1)} ${units[unitIndex]}`;
         }
-        
+
         // Shell WebSocket connection
         const shellSocket = new WebSocket(
             "ws://" + window.location.host + "/ws/shell/"
@@ -944,7 +1002,39 @@
             const data = JSON.parse(e.data);
             if (data.type === 'shell_output') {
                 const output = document.getElementById('shellOutput');
-                output.innerHTML += `<div>${data.output}</div>`;
+                const lines = data.output.split('\n');
+
+                // Add command with prompt
+                const commandLine = document.createElement('div');
+                commandLine.className = 'shell-line';
+                commandLine.innerHTML = `<span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span> <span class="shell-prompt">$</span> <span class="shell-command">${document.getElementById('shellCommand').value}</span>`;
+                output.appendChild(commandLine);
+
+                // Process and style each line of output
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        const div = document.createElement('div');
+                        div.className = 'shell-line';
+
+                        // Style based on content
+                        if (line.startsWith('error') || line.startsWith('Error') || line.includes('not found')) {
+                            div.classList.add('shell-error');
+                        } else if (line.match(/^drwx|^-rw/)) { // ls output
+                            line = line.replace(/([drwx-]{10})/, '<span class="shell-permission">$1</span>');
+                            if (line.includes('drwx')) {
+                                line = line.replace(/([^\s]+)$/, '<span class="shell-directory">$1</span>');
+                            } else {
+                                line = line.replace(/([^\s]+)$/, '<span class="shell-file">$1</span>');
+                            }
+                        } else if (line.includes('successfully') || line.match(/^done|^ok/i)) {
+                            div.classList.add('shell-success');
+                        }
+
+                        div.innerHTML = line;
+                        output.appendChild(div);
+                    }
+                });
+
                 output.scrollTop = output.scrollHeight;
             }
         };
