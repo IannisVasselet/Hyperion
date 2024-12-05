@@ -163,3 +163,35 @@ class CPUConsumer(AsyncWebsocketConsumer):
             'type': 'cpu_usage',
             'data': cpu_data
         }))
+        
+class MemoryConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.is_connected = True
+        asyncio.create_task(self.send_periodic_updates())
+
+    async def disconnect(self, close_code):
+        self.is_connected = False
+
+    @sync_to_async
+    def get_memory_data(self):
+        MemoryUsage = apps.get_model('api', 'MemoryUsage')
+        return [
+            {
+                'recorded_at': usage.recorded_at.isoformat(),
+                'usage': usage.usage
+            }
+            for usage in MemoryUsage.objects.order_by('-recorded_at')[:50]
+        ]
+
+    async def send_periodic_updates(self):
+        while self.is_connected:
+            await self.send_memory_data()
+            await asyncio.sleep(1)  # Update every second
+
+    async def send_memory_data(self):
+        memory_data = await self.get_memory_data()
+        await self.send(text_data=json.dumps({
+            'type': 'memory_usage',
+            'data': memory_data
+        }))

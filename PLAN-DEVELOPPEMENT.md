@@ -95,7 +95,7 @@ HYPERION.md
 - Mettre en place des outils de monitoring (comme Grafana avec Prometheus).
 
 
-### MISSING AND ALREADY DID
+### MISSING AND ALREADY DID !
 Based on the project requirements and the current codebase, here are the missing features:
 
 1. **File Management** (Completely Missing):
