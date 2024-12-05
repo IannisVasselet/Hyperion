@@ -199,9 +199,46 @@ class MemoryConsumer(AsyncWebsocketConsumer):
         }))
         
 class FileSystemConsumer(AsyncWebsocketConsumer):
+    async def execute_command(self, command):
+        try:
+            self.shell.stdin.write(f"{command}\n".encode())
+            await self.shell.stdin.drain()
+            stdout, stderr = await self.shell.communicate()
+            
+            # Create new shell process after command execution
+            self.shell = await asyncio.create_subprocess_shell(
+                '/bin/bash',
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            return stdout.decode() if stdout else stderr.decode()
+        except Exception as e:
+            return str(e)
+        
     async def connect(self):
         await self.accept()
+        self.current_path = '/'
+        self.shell = await asyncio.create_subprocess_shell(
+            '/bin/bash',
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
         await self.send_file_list()
+
+    @sync_to_async
+    def get_directory_contents(self, path='/'):
+        return list_directory(path)
+
+    async def send_file_list(self, path='/'):
+        files = await self.get_directory_contents(path)
+        await self.send(text_data=json.dumps({
+            'type': 'file_list',
+            'data': files,
+            'current_path': path
+        }))
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -209,35 +246,20 @@ class FileSystemConsumer(AsyncWebsocketConsumer):
         
         if action == 'list':
             path = data.get('path', '/')
+            self.current_path = path
+            output = await self.execute_command(f"ls -la {path}")
             await self.send_file_list(path)
-        elif action == 'move':
-            source = data.get('source')
-            destination = data.get('destination')
-            success = await self.move_file(source, destination)
+            
+        elif action == 'cd':
+            path = data.get('path', '/')
+            self.current_path = path
+            output = await self.execute_command(f"cd {path}")
+            await self.send_file_list(path)
+            
         elif action == 'delete':
             path = data.get('path')
-            success = await self.delete_file(path)
-            
-        await self.send_file_list()
-
-    @sync_to_async
-    def list_files(self, path='/'):
-        return list_directory(path)
-
-    @sync_to_async
-    def move_file(self, source, destination):
-        return move_file(source, destination)
-
-    @sync_to_async
-    def delete_file(self, path):
-        return delete_file(path)
-
-    async def send_file_list(self, path='/'):
-        files = await self.list_files(path)
-        await self.send(text_data=json.dumps({
-            'type': 'file_list',
-            'data': files
-        }))
+            output = await self.execute_command(f"rm -rf {path}")
+            await self.send_file_list(self.current_path)
 
 class ShellConsumer(AsyncWebsocketConsumer):
     async def connect(self):
