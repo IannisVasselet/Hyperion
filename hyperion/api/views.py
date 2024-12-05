@@ -5,7 +5,15 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.views import View
+from django.views.generic import FormView
+from django.urls import reverse_lazy
 import json
+
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.util import random_hex
+import qrcode
+import qrcode.image.svg
+from two_factor.forms import TOTPDeviceForm
 
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
@@ -169,23 +177,26 @@ class LogoutView(LoginRequiredMixin, View):
         logout(request)
         return redirect('login')
 
-class TwoFactorSetupView(LoginRequiredMixin, View):
-    def get(self, request):
-        return render(request, 'registration/2fa_setup.html')
+class TwoFactorSetupView(LoginRequiredMixin, FormView):
+    template_name = 'two_factor/setup.html'
+    form_class = TOTPDeviceForm
+    success_url = reverse_lazy('two-factor-complete')
 
-    def post(self, request):
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-        user_profile.two_factor_enabled = True
-        user_profile.save()
-        
-        AuditLog.objects.create(
-            user=request.user,
-            action='2fa_setup',
-            details='2FA enabled',
-            ip_address=request.META.get('REMOTE_ADDR')
-        )
-        
-        return redirect('dashboard')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not hasattr(self, 'device'):
+            self.device = TOTPDevice(user=self.request.user, confirmed=False)
+            self.device.key = random_hex()
+            
+        config = self.device.config_url
+        img = qrcode.make(config, image_factory=qrcode.image.svg.SvgImage)
+        context['qr_code'] = img.to_string().decode('utf-8')
+        return context
+
+    def form_valid(self, form):
+        self.device.confirmed = True
+        self.device.save()
+        return super().form_valid(form)
 
 class TwoFactorVerifyView(View):
     def get(self, request):
@@ -194,23 +205,26 @@ class TwoFactorVerifyView(View):
         return render(request, 'registration/2fa_verify.html')
 
     def post(self, request):
-        code = request.POST.get('code')
+        token = request.POST.get('token')
         user_id = request.session.get('pre_2fa_user_id')
-        
-        if not user_id:
-            return redirect('login')
-            
-        # Here you would verify the 2FA code
-        # For now, we'll just log the user in
         user = User.objects.get(id=user_id)
-        login(request, user)
-        del request.session['pre_2fa_user_id']
+        device = TOTPDevice.objects.get(user=user)
+
+        if device.verify_token(token):
+            login(request, user)
+            del request.session['pre_2fa_user_id']
+            AuditLog.objects.create(
+                user=user,
+                action='2fa_success',
+                details=f'2FA verification from {request.META.get("REMOTE_ADDR")}',
+                ip_address=request.META.get('REMOTE_ADDR')
+            )
+            return redirect('dashboard')
         
         AuditLog.objects.create(
             user=user,
-            action='2fa_verify',
-            details='2FA verification successful',
+            action='2fa_failed',
+            details=f'Failed 2FA attempt from {request.META.get("REMOTE_ADDR")}',
             ip_address=request.META.get('REMOTE_ADDR')
         )
-        
-        return redirect('dashboard')
+        return render(request, 'registration/2fa_verify.html', {'error': 'Invalid token'})

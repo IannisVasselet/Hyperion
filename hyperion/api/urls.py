@@ -22,4 +22,6 @@ urlpatterns = [
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('auth/2fa/setup/', TwoFactorSetupView.as_view(), name='2fa-setup'),
     path('auth/2fa/verify/', TwoFactorVerifyView.as_view(), name='2fa-verify'),
+    path('2fa/setup/', TwoFactorSetupView.as_view(), name='2fa-setup'),
+    path('2fa/verify/', TwoFactorVerifyView.as_view(), name='2fa-verify'),
 ]

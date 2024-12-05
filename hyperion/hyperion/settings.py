@@ -61,6 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.RemoteUserMiddleware',
     'api.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -150,6 +151,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Two Factor Authentication
+TWO_FACTOR_AUTH = {
+    'TOTP_DIGITS': 6,
+    'TOTP_PERIOD': 30,
+    'BACKUP_TOKENS_NUMBER': 5,
+}
 
 # Celery settings
 # hyperion/settings.py
