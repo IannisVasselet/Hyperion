@@ -446,38 +446,45 @@
 
         {% comment %}  WebSockets code for updating services {% endcomment %}
         const servicesSocket = new WebSocket(
-          "ws://" + window.location.host + "/ws/services/"
+            "ws://" + window.location.host + "/ws/services/"
         );
 
-        servicesSocket.onmessage = function (e) {
-          const services = JSON.parse(e.data);
-          updateServiceTable(services);
+        servicesSocket.onmessage = function(e) {
+            const services = JSON.parse(e.data);
+            if (Array.isArray(services)) {
+                updateServiceTable(services);
+            }
         };
 
         function updateServiceTable(services) {
-          const tbody = document.getElementById("servicesTableBody");
-          tbody.innerHTML = "";
-
-          services.forEach((service) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${service.name}</td>
-              <td><span class="status-badge ${service.status.toLowerCase()}">${service.status}</span></td>
-              <td>
-                <button class="service-action start-btn" onclick="controlService('${service.name}', 'start')">Start</button>
-                <button class="service-action stop-btn" onclick="controlService('${service.name}', 'stop')">Stop</button>
-                <button class="service-action restart-btn" onclick="controlService('${service.name}', 'restart')">Restart</button>
-              </td>
-            `;
-            tbody.appendChild(row);
-          });
+            const tbody = document.getElementById("servicesTableBody");
+            // Preserve scroll position
+            const scrollPosition = tbody.parentElement.scrollTop;
+            
+            tbody.innerHTML = "";
+            services.forEach((service) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${service.name}</td>
+                    <td><span class="status-badge ${service.status.toLowerCase()}">${service.status}</span></td>
+                    <td>
+                        <button class="service-action start-btn" onclick="controlService('${service.name}', 'start')">Start</button>
+                        <button class="service-action stop-btn" onclick="controlService('${service.name}', 'stop')">Stop</button>
+                        <button class="service-action restart-btn" onclick="controlService('${service.name}', 'restart')">Restart</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Restore scroll position
+            tbody.parentElement.scrollTop = scrollPosition;
         }
 
         function controlService(serviceName, action) {
-          servicesSocket.send(JSON.stringify({
-            action: action,
-            service: serviceName
-          }));
+            servicesSocket.send(JSON.stringify({
+                action: action,
+                service: serviceName
+            }));
         }
 
         const networkSocket = new WebSocket(

@@ -49,7 +49,16 @@ class ProcessConsumer(AsyncWebsocketConsumer):
 class ServiceConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        await self.send_services()
+        self.is_connected = True
+        asyncio.create_task(self.send_periodic_updates())
+
+    async def disconnect(self, close_code):
+        self.is_connected = False
+
+    async def send_periodic_updates(self):
+        while self.is_connected:
+            await self.send_services()
+            await asyncio.sleep(1)  # Update every second
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -69,11 +78,13 @@ class ServiceConsumer(AsyncWebsocketConsumer):
             'action': action,
             'service': service_name
         }))
-        
-        await self.send_services()
+
+    @sync_to_async
+    def get_service_data(self):
+        return get_services()
 
     async def send_services(self):
-        services = get_services()
+        services = await self.get_service_data()
         await self.send(text_data=json.dumps(services))
 
 class NetworkConsumer(AsyncWebsocketConsumer):
