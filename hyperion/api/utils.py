@@ -5,6 +5,10 @@ import subprocess
 import socket
 import netifaces
 from typing import List, Dict
+import os
+import shutil
+from datetime import datetime 
+from pathlib import Path
 
 def get_processes():
     processes = []
@@ -193,3 +197,52 @@ def execute_ssh_command(host, port, username, password, command):
     result = stdout.read().decode('utf-8')
     ssh.close()
     return result
+
+def get_file_info(path: str) -> dict:
+    """Get file or directory information"""
+    try:
+        stat = os.stat(path)
+        return {
+            'path': path,
+            'name': os.path.basename(path),
+            'type': 'directory' if os.path.isdir(path) else 'file',
+            'size': stat.st_size,
+            'modified_at': datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            'permissions': oct(stat.st_mode)[-3:],
+            'owner': stat.st_uid,
+            'group': stat.st_gid
+        }
+    except (FileNotFoundError, PermissionError):
+        return None
+
+def list_directory(path: str) -> List[dict]:
+    """List contents of a directory"""
+    contents = []
+    try:
+        for item in os.listdir(path):
+            item_path = os.path.join(path, item)
+            file_info = get_file_info(item_path)
+            if file_info:
+                contents.append(file_info)
+        return contents
+    except (FileNotFoundError, PermissionError):
+        return []
+
+def move_file(source: str, destination: str) -> bool:
+    """Move file or directory"""
+    try:
+        shutil.move(source, destination)
+        return True
+    except Exception:
+        return False
+
+def delete_file(path: str) -> bool:
+    """Delete file or directory"""
+    try:
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+        return True
+    except Exception:
+        return False

@@ -31,3 +31,13 @@ class NetworkUsage(models.Model):
     received = models.BigIntegerField()
     sent = models.BigIntegerField()
     recorded_at = models.DateTimeField(auto_now_add=True)
+    
+class FileSystem(models.Model):
+    path = models.CharField(max_length=255)
+    name = models.CharField(max_length=100)
+    type = models.CharField(max_length=20)  # 'file' or 'directory'
+    size = models.BigIntegerField()
+    modified_at = models.DateTimeField()
+    permissions = models.CharField(max_length=10)
+    owner = models.CharField(max_length=50)
+    group = models.CharField(max_length=50)

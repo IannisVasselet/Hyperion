@@ -8,7 +8,8 @@ from asgiref.sync import sync_to_async
 from .utils import (
     get_processes, get_services, get_network_usage, 
     stop_process, start_service, stop_service, restart_service,
-    block_ip, unblock_ip, block_port, get_network_interfaces
+    block_ip, unblock_ip, block_port, get_network_interfaces,
+    list_directory, move_file, delete_file
 )
 
 class ProcessConsumer(AsyncWebsocketConsumer):
@@ -194,4 +195,45 @@ class MemoryConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'memory_usage',
             'data': memory_data
+        }))
+        
+class FileSystemConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        await self.send_file_list()
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        action = data.get('action')
+        
+        if action == 'list':
+            path = data.get('path', '/')
+            await self.send_file_list(path)
+        elif action == 'move':
+            source = data.get('source')
+            destination = data.get('destination')
+            success = await self.move_file(source, destination)
+        elif action == 'delete':
+            path = data.get('path')
+            success = await self.delete_file(path)
+            
+        await self.send_file_list()
+
+    @sync_to_async
+    def list_files(self, path='/'):
+        return list_directory(path)
+
+    @sync_to_async
+    def move_file(self, source, destination):
+        return move_file(source, destination)
+
+    @sync_to_async
+    def delete_file(self, path):
+        return delete_file(path)
+
+    async def send_file_list(self, path='/'):
+        files = await self.list_files(path)
+        await self.send(text_data=json.dumps({
+            'type': 'file_list',
+            'data': files
         }))
