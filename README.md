@@ -68,6 +68,10 @@ hyperion/
 7. **env/** : Environnement virtuel Python.
 
 ### Commande de lancement en developpement
+
+```bash
+cd hyperion && source env/bin/activate
+```
    
 Terminal 1 : Lancer Redis
 ```bash

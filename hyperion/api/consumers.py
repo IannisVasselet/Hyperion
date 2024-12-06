@@ -1,18 +1,16 @@
 # hyperion/api/consumers.py
 import asyncio
 import json
-import asyncio
 
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.apps import apps
-from asgiref.sync import sync_to_async
+
 from .utils import (
-    get_processes, get_services, get_network_usage, 
-    stop_process, start_service, stop_service, restart_service,
-    block_ip, unblock_ip, block_port, get_network_interfaces,
-    list_directory, move_file, delete_file,
-    get_storage_info,
+    get_processes, get_services, stop_process, start_service, stop_service, restart_service,
+    block_ip, unblock_ip, block_port, list_directory, get_storage_info, get_system_temperatures
 )
+
 
 class ProcessConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -32,7 +30,7 @@ class ProcessConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get('action')
         pid = data.get('pid')
-        
+
         if action == 'stop':
             success = stop_process(pid)
             await self.send(text_data=json.dumps({
@@ -48,6 +46,7 @@ class ProcessConsumer(AsyncWebsocketConsumer):
     async def send_processes(self):
         processes = await self.get_process_data()
         await self.send(text_data=json.dumps(processes))
+
 
 class ServiceConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -67,7 +66,7 @@ class ServiceConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get('action')
         service_name = data.get('service')
-        
+
         success = False
         if action == 'start':
             success = start_service(service_name)
@@ -75,7 +74,7 @@ class ServiceConsumer(AsyncWebsocketConsumer):
             success = stop_service(service_name)
         elif action == 'restart':
             success = restart_service(service_name)
-            
+
         await self.send(text_data=json.dumps({
             'status': 'success' if success else 'error',
             'action': action,
@@ -90,6 +89,7 @@ class ServiceConsumer(AsyncWebsocketConsumer):
         services = await self.get_service_data()
         await self.send(text_data=json.dumps(services))
 
+
 class NetworkConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -98,7 +98,7 @@ class NetworkConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get('action')
-        
+
         if action == 'block_ip':
             ip = data.get('ip_address')
             success = block_ip(ip)
@@ -109,12 +109,12 @@ class NetworkConsumer(AsyncWebsocketConsumer):
             port = data.get('port')
             protocol = data.get('protocol', 'tcp')
             success = block_port(port, protocol)
-            
+
         await self.send(text_data=json.dumps({
             'status': 'success' if success else 'error',
             'action': action
         }))
-        
+
         await self.send_network_status()
 
     @sync_to_async
@@ -134,7 +134,8 @@ class NetworkConsumer(AsyncWebsocketConsumer):
             'usage': await self.get_network_usage_data()
         }
         await self.send(text_data=json.dumps(network_data))
-        
+
+
 class CPUConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -166,7 +167,8 @@ class CPUConsumer(AsyncWebsocketConsumer):
             'type': 'cpu_usage',
             'data': cpu_data
         }))
-        
+
+
 class MemoryConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -198,14 +200,15 @@ class MemoryConsumer(AsyncWebsocketConsumer):
             'type': 'memory_usage',
             'data': memory_data
         }))
-        
+
+
 class FileSystemConsumer(AsyncWebsocketConsumer):
     async def execute_command(self, command):
         try:
             self.shell.stdin.write(f"{command}\n".encode())
             await self.shell.stdin.drain()
             stdout, stderr = await self.shell.communicate()
-            
+
             # Create new shell process after command execution
             self.shell = await asyncio.create_subprocess_shell(
                 '/bin/bash',
@@ -213,11 +216,11 @@ class FileSystemConsumer(AsyncWebsocketConsumer):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             return stdout.decode() if stdout else stderr.decode()
         except Exception as e:
             return str(e)
-        
+
     async def connect(self):
         await self.accept()
         self.current_path = '/'
@@ -244,23 +247,24 @@ class FileSystemConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get('action')
-        
+
         if action == 'list':
             path = data.get('path', '/')
             self.current_path = path
             output = await self.execute_command(f"ls -la {path}")
             await self.send_file_list(path)
-            
+
         elif action == 'cd':
             path = data.get('path', '/')
             self.current_path = path
             output = await self.execute_command(f"cd {path}")
             await self.send_file_list(path)
-            
+
         elif action == 'delete':
             path = data.get('path')
             output = await self.execute_command(f"rm -rf {path}")
             await self.send_file_list(self.current_path)
+
 
 class ShellConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -285,11 +289,11 @@ class ShellConsumer(AsyncWebsocketConsumer):
                 # Write command to stdin
                 self.shell.stdin.write(f"{command}\n".encode())
                 await self.shell.stdin.drain()
-                
+
                 # Execute command and get complete output
                 stdout, stderr = await self.shell.communicate(input=None)
                 output = []
-                
+
                 if stdout:
                     output.extend(stdout.decode().splitlines())
                 if stderr:
@@ -308,13 +312,14 @@ class ShellConsumer(AsyncWebsocketConsumer):
                     'type': 'shell_output',
                     'output': '\n'.join(output)
                 }))
-                
+
             except Exception as e:
                 await self.send(text_data=json.dumps({
                     'type': 'shell_output',
                     'output': f"Error: {str(e)}"
                 }))
-                
+
+
 class StorageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -336,3 +341,25 @@ class StorageConsumer(AsyncWebsocketConsumer):
                 'data': data
             }))
             await asyncio.sleep(30)  # Update every 30 seconds
+
+class TemperatureConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.is_connected = True
+        asyncio.create_task(self.send_periodic_updates())
+
+    async def disconnect(self, close_code):
+        self.is_connected = False
+
+    @sync_to_async
+    def get_temperature_data(self):
+        return get_system_temperatures()
+
+    async def send_periodic_updates(self):
+        while self.is_connected:
+            data = await self.get_temperature_data()
+            await self.send(text_data=json.dumps({
+                'type': 'temperature_info',
+                'data': data
+            }))
+            await asyncio.sleep(5)  # Update every 5 seconds

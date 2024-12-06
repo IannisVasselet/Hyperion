@@ -24,9 +24,11 @@
         transition: background-color 0.3s, color 0.3s;
         padding: 20px;
       }
+
       canvas {
         max-width: 100%;
       }
+
       .nav-menu {
         position: fixed;
         left: 0;
@@ -92,6 +94,7 @@
       .dark-mode .nav-menu a:hover {
         background: #2c2c2c;
       }
+
       .container {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -99,6 +102,7 @@
         margin-bottom: 20px;
         width: 100%;
       }
+
       .scrollable-list {
         max-height: 300px;
         overflow-y: auto;
@@ -106,6 +110,7 @@
         background: rgba(255, 255, 255, 0.05);
         border-radius: 8px;
       }
+
       .widget {
         border: 1px solid #ccc;
         padding: 20px;
@@ -113,6 +118,7 @@
         background-color: #f9f9f9;
         transition: background-color 0.3s, color 0.3s;
       }
+
       .charts-container {
         display: grid;
         grid-template-columns: 1fr;
@@ -121,13 +127,14 @@
         width: 100%;
         padding: 20px;
       }
+
       .chart-controls {
         margin-bottom: 20px;
         width: 100%;
         display: flex;
         justify-content: flex-start;
       }
-      
+
       .chart-controls select {
         padding: 10px;
         border-radius: 4px;
@@ -136,65 +143,139 @@
         width: 250px;
         font-size: 14px;
       }
-      
+
       .dark-mode .chart-controls select {
         background-color: #333;
         border-color: #555;
         color: #fff;
       }
+
       .chart-container {
         position: relative;
         height: 400px !important;
         width: 100% !important;
         margin: 0 auto;
       }
+
       .storage-container {
         display: grid;
         gap: 15px;
         padding: 10px;
       }
+
       .storage-item {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 8px;
-          padding: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 15px;
       }
+
       .storage-progress {
-          width: 100%;
-          height: 20px;
-          background: #ddd;
-          border-radius: 10px;
-          overflow: hidden;
-          margin: 10px 0;
-      }     
-      .storage-bar {
-          height: 100%;
-          background: linear-gradient(90deg, #4CAF50, #FF9800);
-          transition: width 0.3s ease;
+        width: 100%;
+        height: 20px;
+        background: #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
       }
+
+      .storage-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #ff9800);
+        transition: width 0.3s ease;
+      }
+
+      .dark-mode .storage-item {
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .dark-mode .storage-progress {
+        background: #333;
+      }
+
+      .temperature-container {
+        display: grid;
+        gap: 15px;
+        padding: 10px;
+      }
+
+      .temperature-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+      }
+
+      .temperature-progress {
+        width: 100%;
+        height: 20px;
+        background: #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+
+      .temperature-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #ff9800, #f44336);
+        transition: width 0.3s ease;
+      }
+
+      .temperature-bar.warning {
+        background: #ff9800;
+      }
+
+      .temperature-bar.critical {
+        background: #f44336;
+      }
+
+      .temperature-item h4 {
+        margin: 0 0 10px 0;
+      }
+
+      .temperature-item small {
+        display: block;
+        margin-top: 5px;
+        color: #888;
+      }
+
+      .dark-mode .temperature-item {
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .dark-mode .temperature-progress {
+        background: #333;
+      }
+
       .widget.monitoring {
         padding: 20px;
         margin-bottom: 30px;
         height: auto;
         min-height: 600px;
-      } 
+      }
+
       .dark-mode .widget {
         background-color: #444;
         border-color: #555;
       }
+
       .scrollable-list::-webkit-scrollbar {
         width: 8px;
       }
+
       .scrollable-list::-webkit-scrollbar-track {
         background: #f1f1f1;
         border-radius: 4px;
       }
+
       .scrollable-list::-webkit-scrollbar-thumb {
         background: #888;
         border-radius: 4px;
       }
+
       .dark-mode .scrollable-list::-webkit-scrollbar-track {
         background: #333;
       }
+
       .widget {
         border: 1px solid #ccc;
         padding: 20px;
@@ -203,18 +284,26 @@
         background-color: #f9f9f9;
         transition: background-color 0.3s, color 0.3s;
       }
+
       .dark-mode {
         background-color: #333;
         color: #fff;
       }
+
       .dark-mode .widget {
         background-color: #444;
         border-color: #555;
       }
+
       /* Ajuster les widgets pour qu'ils soient en grille */
-      #monitoring, #services, #network, #files, #shell {
-          grid-column: span 2;
+      #monitoring,
+      #services,
+      #network,
+      #files,
+      #shell {
+        grid-column: span 2;
       }
+
       .theme-toggle {
         position: fixed;
         top: 10px;
@@ -226,6 +315,7 @@
         border: none;
         border-radius: 5px;
       }
+
       .scrollable-list {
         max-height: 400px;
         overflow-y: auto;
@@ -272,10 +362,12 @@
       .priority-select {
         background-color: #f0f0f0;
       }
+
       .service-table {
         width: 100%;
         border-collapse: collapse;
       }
+
       .service-action {
         padding: 4px 8px;
         margin: 0 2px;
@@ -283,31 +375,38 @@
         border: none;
         cursor: pointer;
       }
+
       .start-btn {
         background-color: #4caf50;
         color: white;
       }
+
       .stop-btn {
         background-color: #f44336;
         color: white;
       }
+
       .restart-btn {
         background-color: #ff9800;
         color: white;
       }
+
       .status-badge {
         padding: 2px 6px;
         border-radius: 12px;
         font-size: 0.9em;
       }
+
       .active {
         background-color: #4caf50;
         color: white;
       }
+
       .inactive {
         background-color: #f44336;
         color: white;
       }
+
       .process-table tr {
         transition: all 0.3s ease;
       }
@@ -315,6 +414,7 @@
       .scrollable-list {
         scroll-behavior: smooth;
       }
+
       .network-controls {
         display: flex;
         flex-direction: column;
@@ -521,12 +621,6 @@
       <h2>Hyperion</h2>
       <ul>
         <li>
-          <a href="#monitoring" class="active">
-            <i class="fas fa-chart-line"></i>
-            System Monitoring
-          </a>
-        </li>
-        <li>
           <a href="#processes">
             <i class="fas fa-microchip"></i>
             Processes
@@ -561,6 +655,7 @@
             <i class="fas fa-sign-out-alt"></i>
             Logout
           </a>
+        </li>
       </ul>
     </nav>
     <div class="main-content">
@@ -573,7 +668,7 @@
       <main>
         <!-- Processes table below -->
         <div class="container">
-          <div class="widget" id="monitoring">
+          <div class="widget" id="processes">
             <h3>Processes</h3>
             <div class="controls">
               <input
@@ -621,38 +716,56 @@
             </div>
           </div>
 
-        <!-- Charts below -->
-        <div class="charts-container">
-          <div class="widget">
-            <div class="chart-controls">
-              <select id="chartSelector" onchange="switchChart()">
-                <option value="cpu">CPU Usage</option>
-                <option value="memory">Memory Usage</option>
-                <option value="network">Network Usage</option>
-              </select>
-            </div>
-            <div>
-              <!-- Chart containers -->
-              <div id="cpuChartContainer" class="chart-container" style="height: 300px">
-                <canvas id="cpuChart"></canvas>
+          <!-- Charts below -->
+          <div class="charts-container">
+            <div class="widget">
+              <div class="chart-controls">
+                <select id="chartSelector" onchange="switchChart()">
+                  <option value="cpu">CPU Usage</option>
+                  <option value="memory">Memory Usage</option>
+                  <option value="network">Network Usage</option>
+                </select>
               </div>
-              <div id="memoryChartContainer" class="chart-container" style="display: none; height: 300px">
-                <canvas id="memoryChart"></canvas>
-              </div>
-              <div id="networkChartContainer" class="chart-container" style="display: none;">
-                <canvas id="networkChart"></canvas>
+              <div>
+                <!-- Chart containers -->
+                <div
+                  id="cpuChartContainer"
+                  class="chart-container"
+                  style="height: 300px"
+                >
+                  <canvas id="cpuChart"></canvas>
+                </div>
+                <div
+                  id="memoryChartContainer"
+                  class="chart-container"
+                  style="display: none; height: 300px"
+                >
+                  <canvas id="memoryChart"></canvas>
+                </div>
+                <div
+                  id="networkChartContainer"
+                  class="chart-container"
+                  style="display: none"
+                >
+                  <canvas id="networkChart"></canvas>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <!-- Storage Widget -->
-        <div class="widget" id="storage">
-          <h3>Storage Analysis</h3>
-          <div class="storage-container scrollable-list">
+          <!-- Storage Widget -->
+          <div class="widget" id="storage">
+            <h3>Storage Analysis</h3>
+            <div class="storage-container scrollable-list">
               <div id="storageList"></div>
+            </div>
           </div>
-        </div>
-        </div>
+          <!-- Temperature Widget -->
+          <div class="widget" id="temperature">
+            <h3>System Temperatures</h3>
+            <div class="temperature-container scrollable-list">
+              <div id="temperatureList"></div>
+            </div>
+          </div>
           <div class="widget" id="network">
             <h3>Network Security</h3>
             <div class="network-controls">
@@ -683,9 +796,9 @@
                 </select>
                 <button
                   onclick="blockPort(
-                      document.getElementById('portNumber').value,
-                      document.getElementById('protocol').value
-                  )"
+                    document.getElementById('portNumber').value,
+                    document.getElementById('protocol').value
+                )"
                 >
                   Block Port
                 </button>
@@ -696,23 +809,27 @@
                 <select id="networkInterface">
                   <option value="">Select Interface</option>
                 </select>
-                <input type="text" id="ipConfig" placeholder="IP Configuration" />
+                <input
+                  type="text"
+                  id="ipConfig"
+                  placeholder="IP Configuration"
+                />
                 <input type="number" id="mtu" placeholder="MTU" />
                 <button
                   onclick="configureInterface(
-                      document.getElementById('networkInterface').value,
-                      {
-                          ip_address: document.getElementById('ipConfig').value,
-                          mtu: document.getElementById('mtu').value
-                      }
-                  )"
+                    document.getElementById('networkInterface').value,
+                    {
+                        ip_address: document.getElementById('ipConfig').value,
+                        mtu: document.getElementById('mtu').value
+                    }
+                )"
                 >
                   Configure Interface
                 </button>
               </div>
             </div>
           </div>
-        <!-- File Management -->
+          <!-- File Management -->
           <div class="widget" id="files">
             <h3>File Management</h3>
             <div class="file-controls">
@@ -739,13 +856,9 @@
                 </thead>
                 <tbody id="fileTableBody"></tbody>
               </table>
-              <!-- Outputshell for debug -->
-              {% comment %}
-              <div id="fileOperationsOutput" class="shell-output"></div>
-              {% endcomment %}
             </div>
           </div>
-        <!-- Shell -->
+          <!-- Shell -->
           <div class="widget" id="shell">
             <h3>Shell</h3>
             <div class="shell-container">
@@ -760,198 +873,199 @@
               </div>
             </div>
           </div>
-        </div
+        </div>
       </main>
     </div>
 
     <script>
-                  document.addEventListener('DOMContentLoaded', function() {
-                    const navLinks = document.querySelectorAll('.nav-menu a');
+        document.addEventListener('DOMContentLoaded', function () {
+            const navLinks = document.querySelectorAll('.nav-menu a');
 
-                    navLinks.forEach(link => {
-                        link.addEventListener('click', function(e) {
-                            // Enlever la classe active de tous les liens
-                            navLinks.forEach(l => l.classList.remove('active'));
-                            // Ajouter la classe active au lien cliqué
-                            this.classList.add('active');
-                        });
-                    });
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    // Enlever la classe active de tous les liens
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    // Ajouter la classe active au lien cliqué
+                    this.classList.add('active');
                 });
-                const cpuData = JSON.parse(
-                  document.getElementById("cpu-data").textContent
-                );
-                const memoryData = JSON.parse(
-                  document.getElementById("memory-data").textContent
-                );
-                const networkData = JSON.parse(
-                  document.getElementById("network-data").textContent
-                );
+            });
+        });
+        const cpuData = JSON.parse(
+            document.getElementById("cpu-data").textContent
+        );
+        const memoryData = JSON.parse(
+            document.getElementById("memory-data").textContent
+        );
+        const networkData = JSON.parse(
+            document.getElementById("network-data").textContent
+        );
 
-                const networkChartCtx = document
-                  .getElementById("networkChart")
-                  .getContext("2d");
+        const networkChartCtx = document
+            .getElementById("networkChart")
+            .getContext("2d");
 
-                new Chart(networkChartCtx, {
-                  type: "line",
-                  data: {
-                    labels: networkData.map((d) => d.recorded_at),
-                    datasets: [
-                      {
+        new Chart(networkChartCtx, {
+            type: "line",
+            data: {
+                labels: networkData.map((d) => d.recorded_at),
+                datasets: [
+                    {
                         label: "Received",
                         data: networkData.map((d) => d.received),
                         borderColor: "rgba(255, 99, 132, 1)",
                         backgroundColor: "rgba(255, 99, 132, 0.2)",
                         fill: false,
-                      },
-                      {
+                    },
+                    {
                         label: "Sent",
                         data: networkData.map((d) => d.sent),
                         borderColor: "rgba(54, 162, 235, 1)",
                         backgroundColor: "rgba(54, 162, 235, 0.2)",
                         fill: false,
-                      },
-                    ],
-                  },
-                });
-                function switchChart() {
-                    const selectedChart = document.getElementById('chartSelector').value;
-                    
-                    // Hide all charts
-                    document.getElementById('cpuChartContainer').style.display = 'none';
-                    document.getElementById('memoryChartContainer').style.display = 'none';
-                    document.getElementById('networkChartContainer').style.display = 'none';
-                    
-                    // Show selected chart
-                    document.getElementById(`${selectedChart}ChartContainer`).style.display = 'block';
-                    
-                    // Trigger resize to fix chart rendering
-                    window.dispatchEvent(new Event('resize'));
-                }
-                
-                // Initial load
-                document.addEventListener('DOMContentLoaded', function() {
-                    switchChart();
-                });
+                    },
+                ],
+            },
+        });
 
-                function toggleTheme() {
-                  document.body.classList.toggle("dark-mode");
-                }
+        function switchChart() {
+            const selectedChart = document.getElementById('chartSelector').value;
 
-                {% comment %}  WebSockets code for updating processes {% endcomment %}
-                const processesSocket = new WebSocket(
-                    "ws://" + window.location.host + "/ws/processes/"
-                );
+            // Hide all charts
+            document.getElementById('cpuChartContainer').style.display = 'none';
+            document.getElementById('memoryChartContainer').style.display = 'none';
+            document.getElementById('networkChartContainer').style.display = 'none';
 
-                processesSocket.onmessage = function(e) {
-                    const processes = JSON.parse(e.data);
-                    if (Array.isArray(processes)) {
-                        updateProcessTable(processes);
+            // Show selected chart
+            document.getElementById(`${selectedChart}ChartContainer`).style.display = 'block';
+
+            // Trigger resize to fix chart rendering
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function () {
+            switchChart();
+        });
+
+        function toggleTheme() {
+            document.body.classList.toggle("dark-mode");
+        }
+
+        {% comment %}  WebSockets code for updating processes {% endcomment %}
+        const processesSocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/processes/"
+        );
+
+        processesSocket.onmessage = function (e) {
+            const processes = JSON.parse(e.data);
+            if (Array.isArray(processes)) {
+                updateProcessTable(processes);
+            }
+        };
+
+        function updateProcessTable(processes) {
+            const tbody = document.getElementById("processesTableBody");
+            const currentFilter = document.getElementById("processFilter").value.toLowerCase();
+            const currentSort = document.getElementById("processSorting").value;
+
+            // Preserve current scroll position
+            const scrollPosition = tbody.parentElement.scrollTop;
+
+            tbody.innerHTML = "";
+            processes
+                .filter(process => process.name.toLowerCase().includes(currentFilter))
+                .sort((a, b) => {
+                    if (currentSort === "cpu") {
+                        return b.cpu_percent - a.cpu_percent;
+                    } else if (currentSort === "memory") {
+                        return b.memory_percent - a.memory_percent;
+                    } else {
+                        return a.name.localeCompare(b.name);
                     }
-                };
+                })
+                .forEach((process) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                                    <td>${process.name}</td>
+                                    <td>${process.pid}</td>
+                                    <td>${process.status}</td>
+                                    <td>${process.cpu_percent?.toFixed(1) || 0}%</td>
+                                    <td>${process.memory_percent?.toFixed(1) || 0}%</td>
+                                    <td>
+                                        <button class="process-action stop-btn" onclick="stopProcess(${process.pid})">Stop</button>
+                                        <select class="process-action priority-select" onchange="changePriority(${process.pid}, this.value)">
+                                            <option value="-20">Highest</option>
+                                            <option value="0">Normal</option>
+                                            <option value="19">Lowest</option>
+                                        </select>
+                                    </td>
+                                `;
+                    tbody.appendChild(row);
+                });
 
-                function updateProcessTable(processes) {
-                    const tbody = document.getElementById("processesTableBody");
-                    const currentFilter = document.getElementById("processFilter").value.toLowerCase();
-                    const currentSort = document.getElementById("processSorting").value;
+            // Restore scroll position
+            tbody.parentElement.scrollTop = scrollPosition;
+        }
 
-                    // Preserve current scroll position
-                    const scrollPosition = tbody.parentElement.scrollTop;
+        function stopProcess(pid) {
+            processesSocket.send(
+                JSON.stringify({
+                    action: "stop",
+                    pid: pid,
+                })
+            );
+        }
 
-                    tbody.innerHTML = "";
-                    processes
-                        .filter(process => process.name.toLowerCase().includes(currentFilter))
-                        .sort((a, b) => {
-                            if (currentSort === "cpu") {
-                                return b.cpu_percent - a.cpu_percent;
-                            } else if (currentSort === "memory") {
-                                return b.memory_percent - a.memory_percent;
-                            } else {
-                                return a.name.localeCompare(b.name);
-                            }
-                        })
-                        .forEach((process) => {
-                            const row = document.createElement("tr");
-                            row.innerHTML = `
-                                <td>${process.name}</td>
-                                <td>${process.pid}</td>
-                                <td>${process.status}</td>
-                                <td>${process.cpu_percent?.toFixed(1) || 0}%</td>
-                                <td>${process.memory_percent?.toFixed(1) || 0}%</td>
-                                <td>
-                                    <button class="process-action stop-btn" onclick="stopProcess(${process.pid})">Stop</button>
-                                    <select class="process-action priority-select" onchange="changePriority(${process.pid}, this.value)">
-                                        <option value="-20">Highest</option>
-                                        <option value="0">Normal</option>
-                                        <option value="19">Lowest</option>
-                                    </select>
-                                </td>
-                            `;
-                            tbody.appendChild(row);
-                        });
+        function changePriority(pid, priority) {
+            processesSocket.send(
+                JSON.stringify({
+                    action: "priority",
+                    pid: pid,
+                    priority: parseInt(priority),
+                })
+            );
+        }
 
-                    // Restore scroll position
-                    tbody.parentElement.scrollTop = scrollPosition;
-                }
+        function filterProcesses() {
+            const filter = document
+                .getElementById("processFilter")
+                .value.toLowerCase();
+            const rows = document
+                .getElementById("processesTableBody")
+                .getElementsByTagName("tr");
 
-                function stopProcess(pid) {
-                  processesSocket.send(
-                    JSON.stringify({
-                      action: "stop",
-                      pid: pid,
-                    })
-                  );
-                }
+            for (let row of rows) {
+                const name = row.cells[0].textContent.toLowerCase();
+                row.style.display = name.includes(filter) ? "" : "none";
+            }
+        }
 
-                function changePriority(pid, priority) {
-                  processesSocket.send(
-                    JSON.stringify({
-                      action: "priority",
-                      pid: pid,
-                      priority: parseInt(priority),
-                    })
-                  );
-                }
+        function sortProcesses() {
+            const sortBy = document.getElementById("processSorting").value;
+            const tbody = document.getElementById("processesTableBody");
+            const rows = Array.from(tbody.getElementsByTagName("tr"));
 
-                function filterProcesses() {
-                  const filter = document
-                    .getElementById("processFilter")
-                    .value.toLowerCase();
-                  const rows = document
-                    .getElementById("processesTableBody")
-                    .getElementsByTagName("tr");
-
-                  for (let row of rows) {
-                    const name = row.cells[0].textContent.toLowerCase();
-                    row.style.display = name.includes(filter) ? "" : "none";
-                  }
-                }
-
-                function sortProcesses() {
-                  const sortBy = document.getElementById("processSorting").value;
-                  const tbody = document.getElementById("processesTableBody");
-                  const rows = Array.from(tbody.getElementsByTagName("tr"));
-
-                  rows.sort((a, b) => {
-                    const aVal =
-                      a.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
+            rows.sort((a, b) => {
+                const aVal =
+                    a.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
                         .textContent;
-                    const bVal =
-                      b.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
+                const bVal =
+                    b.cells[sortBy === "cpu" ? 3 : sortBy === "memory" ? 4 : 0]
                         .textContent;
-                    return sortBy === "name"
-                      ? aVal.localeCompare(bVal)
-                      : parseFloat(bVal) - parseFloat(aVal);
-                  });
+                return sortBy === "name"
+                    ? aVal.localeCompare(bVal)
+                    : parseFloat(bVal) - parseFloat(aVal);
+            });
 
-                  rows.forEach((row) => tbody.appendChild(row));
-                }
+            rows.forEach((row) => tbody.appendChild(row));
+        }
 
         {% comment %}  WebSockets code for updating services {% endcomment %}
         const servicesSocket = new WebSocket(
             "ws://" + window.location.host + "/ws/services/"
         );
 
-        servicesSocket.onmessage = function(e) {
+        servicesSocket.onmessage = function (e) {
             const services = JSON.parse(e.data);
             if (Array.isArray(services)) {
                 updateServiceTable(services);
@@ -967,14 +1081,14 @@
             services.forEach((service) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td>${service.name}</td>
-                    <td><span class="status-badge ${service.status.toLowerCase()}">${service.status}</span></td>
-                    <td>
-                        <button class="service-action start-btn" onclick="controlService('${service.name}', 'start')">Start</button>
-                        <button class="service-action stop-btn" onclick="controlService('${service.name}', 'stop')">Stop</button>
-                        <button class="service-action restart-btn" onclick="controlService('${service.name}', 'restart')">Restart</button>
-                    </td>
-                `;
+                        <td>${service.name}</td>
+                        <td><span class="status-badge ${service.status.toLowerCase()}">${service.status}</span></td>
+                        <td>
+                            <button class="service-action start-btn" onclick="controlService('${service.name}', 'start')">Start</button>
+                            <button class="service-action stop-btn" onclick="controlService('${service.name}', 'stop')">Stop</button>
+                            <button class="service-action restart-btn" onclick="controlService('${service.name}', 'restart')">Restart</button>
+                        </td>
+                    `;
                 tbody.appendChild(row);
             });
 
@@ -990,397 +1104,444 @@
         }
 
         const networkSocket = new WebSocket(
-          "ws://" + window.location.host + "/ws/networks/"
-      );
+            "ws://" + window.location.host + "/ws/networks/"
+        );
 
-      networkSocket.onmessage = function (e) {
-          const data = JSON.parse(e.data);
-          if (data.usage && Array.isArray(data.usage)) {
-              const networkChart = Chart.getChart("networkChart");
-              networkChart.data.labels = data.usage.map(d => d.recorded_at);
-              networkChart.data.datasets[0].data = data.usage.map(d => d.received);
-              networkChart.data.datasets[1].data = data.usage.map(d => d.sent);
-              networkChart.update();
-          }
-      };
+        networkSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            if (data.usage && Array.isArray(data.usage)) {
+                const networkChart = Chart.getChart("networkChart");
+                networkChart.data.labels = data.usage.map(d => d.recorded_at);
+                networkChart.data.datasets[0].data = data.usage.map(d => d.received);
+                networkChart.data.datasets[1].data = data.usage.map(d => d.sent);
+                networkChart.update();
+            }
+        };
 
-      function blockIP(ip) {
-        networkSocket.send(JSON.stringify({
-          action: 'block_ip',
-          ip_address: ip
-        }));
-      }
+        function blockIP(ip) {
+            networkSocket.send(JSON.stringify({
+                action: 'block_ip',
+                ip_address: ip
+            }));
+        }
 
-      function configureInterface(interface, config) {
-        networkSocket.send(JSON.stringify({
-          action: 'configure_interface',
-          interface: interface,
-          config: config
-        }));
-      }
+        function configureInterface(interface, config) {
+            networkSocket.send(JSON.stringify({
+                action: 'configure_interface',
+                interface: interface,
+                config: config
+            }));
+        }
 
-      // CPU WebSocket connection and chart
-      const cpuSocket = new WebSocket(
-        "ws://" + window.location.host + "/ws/cpu/"
-      );
+        // CPU WebSocket connection and chart
+        const cpuSocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/cpu/"
+        );
 
-      const cpuChartCtx = document.getElementById("cpuChart").getContext("2d");
-      const cpuChart = new Chart(cpuChartCtx, {
-        type: "line",
-        data: {
-            labels: [],
-            datasets: [{
-                label: "CPU Usage",
-                data: [],
-                borderColor: "rgba(75, 192, 192, 1)",
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                fill: true,
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'Usage (%)'
+        const cpuChartCtx = document.getElementById("cpuChart").getContext("2d");
+        const cpuChart = new Chart(cpuChartCtx, {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "CPU Usage",
+                    data: [],
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    fill: true,
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Usage (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
                     }
                 },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time'
-                    }
-                }
-            },
-            animation: {
-                duration: 0
-            },
-            responsive: true,
-            maintainAspectRatio: false
-        }
-      });
-
-      cpuSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        if (data.type === 'cpu_usage') {
-            const cpuData = data.data;
-
-            // Update chart data
-            cpuChart.data.labels = cpuData.map(d => {
-                const date = new Date(d.recorded_at);
-                return date.toLocaleTimeString();
-            });
-            cpuChart.data.datasets[0].data = cpuData.map(d => d.usage);
-
-            // Update chart
-            cpuChart.update();
-        }
-      };
-      // Memory WebSocket connection and chart
-      const memorySocket = new WebSocket(
-        "ws://" + window.location.host + "/ws/memory/"
-      );
-
-      const memoryChartCtx = document.getElementById("memoryChart").getContext("2d");
-      const memoryChart = new Chart(memoryChartCtx, {
-        type: "line",
-        data: {
-            labels: [],
-            datasets: [{
-                label: "Memory Usage",
-                data: [],
-                borderColor: "rgba(153, 102, 255, 1)",
-                backgroundColor: "rgba(153, 102, 255, 0.2)",
-                fill: true,
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'Usage (%)'
-                    }
+                animation: {
+                    duration: 0
                 },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time'
-                    }
-                }
-            },
-            animation: {
-                duration: 0
-            },
-            responsive: true,
-            maintainAspectRatio: false
-        }
-      });
-
-      memorySocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        if (data.type === 'memory_usage') {
-            const memoryData = data.data;
-
-            // Update chart data
-            memoryChart.data.labels = memoryData.map(d => {
-                const date = new Date(d.recorded_at);
-                return date.toLocaleTimeString();
-            });
-            memoryChart.data.datasets[0].data = memoryData.map(d => d.usage);
-
-            // Update chart
-            memoryChart.update();
-        }
-      };
-
-      // File management WebSocket connection
-      const fileSocket = new WebSocket(
-          "ws://" + window.location.host + "/ws/files/"
-      );
-
-      fileSocket.onmessage = function(e) {
-          const data = JSON.parse(e.data);
-          if (data.type === 'file_list') {
-              updateFileTable(data.data);
-              // Update file operations output instead of shell output
-              const output = document.getElementById('fileOperationsOutput');
-              const commandLine = document.createElement('div');
-              commandLine.className = 'shell-line';
-              commandLine.innerHTML = `
-                  <span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span>
-                  <span class="shell-prompt">$</span>
-                  <span class="shell-command">ls -la ${document.getElementById('currentPath').value}</span>
-              `;
-              output.appendChild(commandLine);
-          }
-      };
-
-      function openDirectory(path) {
-          // Send cd command via WebSocket
-          fileSocket.send(JSON.stringify({
-              action: 'cd',
-              path: path
-          }));
-
-          // Update UI
-          document.getElementById('currentPath').value = path;
-
-          // List contents
-          fileSocket.send(JSON.stringify({
-              action: 'list',
-              path: path
-          }));
-      }
-
-      function deleteFile(path) {
-          if (confirm('Are you sure you want to delete this item?')) {
-              // Send rm command via WebSocket
-              fileSocket.send(JSON.stringify({
-                  action: 'delete',
-                  path: path
-              }));
-          }
-      }
-
-      function updateFileTable(files) {
-        const tbody = document.getElementById("fileTableBody");
-        const scrollPosition = tbody.parentElement.scrollTop;
-
-        tbody.innerHTML = "";
-
-        files.forEach(file => {
-            const row = document.createElement("tr");
-            row.draggable = true;
-            row.ondragstart = handleDragStart;
-            row.innerHTML = `
-                <td>${file.name}</td>
-                <td>${file.type}</td>
-                <td>${formatSize(file.size)}</td>
-                <td>${new Date(file.modified_at).toLocaleString()}</td>
-                <td>${file.permissions}</td>
-                <td>
-                    ${file.type === 'directory' ?
-                        `<button onclick="openDirectory('${file.path}')" class="open-btn">Open</button>` :
-                        ''
-                    }
-                    <button onclick="deleteFile('${file.path}')" class="delete-btn">Delete</button>
-                </td>
-            `;
-            tbody.appendChild(row);
+                responsive: true,
+                maintainAspectRatio: false
+            }
         });
 
-        // Update file operations output for shell debuging
-        /*const output = document.getElementById('fileOperationsOutput');
-        const commandLine = document.createElement('div');
-        commandLine.className = 'shell-line';
-        commandLine.innerHTML = `
-            <span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span>
-            <span class="shell-prompt">$</span>
-            <span class="shell-command">ls -la ${document.getElementById('currentPath').value}</span>
-        `;
-        output.appendChild(commandLine);
-        output.scrollTop = output.scrollHeight;*/
-      }
+        cpuSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'cpu_usage') {
+                const cpuData = data.data;
 
-      function navigateUp() {
-        const currentPath = document.getElementById('currentPath').value;
-        // Get parent directory path
-        const parentPath = currentPath.split('/').slice(0, -1).join('/') || '/';
+                // Update chart data
+                cpuChart.data.labels = cpuData.map(d => {
+                    const date = new Date(d.recorded_at);
+                    return date.toLocaleTimeString();
+                });
+                cpuChart.data.datasets[0].data = cpuData.map(d => d.usage);
 
-        fileSocket.send(JSON.stringify({
-            action: 'cd',
-            path: parentPath
-        }));
+                // Update chart
+                cpuChart.update();
+            }
+        };
+        // Memory WebSocket connection and chart
+        const memorySocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/memory/"
+        );
 
-        // Update UI
-        document.getElementById('currentPath').value = parentPath;
+        const memoryChartCtx = document.getElementById("memoryChart").getContext("2d");
+        const memoryChart = new Chart(memoryChartCtx, {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Memory Usage",
+                    data: [],
+                    borderColor: "rgba(153, 102, 255, 1)",
+                    backgroundColor: "rgba(153, 102, 255, 0.2)",
+                    fill: true,
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Usage (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    }
+                },
+                animation: {
+                    duration: 0
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
 
-        // List contents of parent directory
-        fileSocket.send(JSON.stringify({
-            action: 'list',
-            path: parentPath
-        }));
-      }
+        memorySocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'memory_usage') {
+                const memoryData = data.data;
 
-      function refreshFiles() {
-          const currentPath = document.getElementById('currentPath').value;
-          fileSocket.send(JSON.stringify({
-              action: 'list',
-              path: currentPath
-          }));
+                // Update chart data
+                memoryChart.data.labels = memoryData.map(d => {
+                    const date = new Date(d.recorded_at);
+                    return date.toLocaleTimeString();
+                });
+                memoryChart.data.datasets[0].data = memoryData.map(d => d.usage);
+
+                // Update chart
+                memoryChart.update();
+            }
+        };
+
+        // File management WebSocket connection
+        const fileSocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/files/"
+        );
+
+        fileSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'file_list') {
+                updateFileTable(data.data);
+                // Update file operations output instead of shell output
+                const output = document.getElementById('fileOperationsOutput');
+                const commandLine = document.createElement('div');
+                commandLine.className = 'shell-line';
+                commandLine.innerHTML = `
+                      <span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                      <span class="shell-prompt">$</span>
+                      <span class="shell-command">ls -la ${document.getElementById('currentPath').value}</span>
+                  `;
+                output.appendChild(commandLine);
+            }
+        };
+
+        function openDirectory(path) {
+            // Send cd command via WebSocket
+            fileSocket.send(JSON.stringify({
+                action: 'cd',
+                path: path
+            }));
+
+            // Update UI
+            document.getElementById('currentPath').value = path;
+
+            // List contents
+            fileSocket.send(JSON.stringify({
+                action: 'list',
+                path: path
+            }));
         }
 
-      // Helper function to format file sizes
-      function formatSize(bytes) {
-          const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-          let size = bytes;
-          let unitIndex = 0;
+        function deleteFile(path) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                // Send rm command via WebSocket
+                fileSocket.send(JSON.stringify({
+                    action: 'delete',
+                    path: path
+                }));
+            }
+        }
 
-          while (size >= 1024 && unitIndex < units.length - 1) {
-              size /= 1024;
-              unitIndex++;
-          }
+        function updateFileTable(files) {
+            const tbody = document.getElementById("fileTableBody");
+            const scrollPosition = tbody.parentElement.scrollTop;
 
-          return `${size.toFixed(1)} ${units[unitIndex]}`;
-      }
+            tbody.innerHTML = "";
 
-      // Drag and drop handlers
-      function handleDragStart(e) {
-          e.dataTransfer.setData('text/plain', e.target.closest('tr').cells[0].textContent);
-      }
+            files.forEach(file => {
+                const row = document.createElement("tr");
+                row.draggable = true;
+                row.ondragstart = handleDragStart;
+                row.innerHTML = `
+                    <td>${file.name}</td>
+                    <td>${file.type}</td>
+                    <td>${formatSize(file.size)}</td>
+                    <td>${new Date(file.modified_at).toLocaleString()}</td>
+                    <td>${file.permissions}</td>
+                    <td>
+                        ${file.type === 'directory' ?
+                    `<button onclick="openDirectory('${file.path}')" class="open-btn">Open</button>` :
+                    ''
+                }
+                        <button onclick="deleteFile('${file.path}')" class="delete-btn">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
 
-      function handleDrop(e) {
-          e.preventDefault();
-          const source = e.dataTransfer.getData('text/plain');
-          const destination = document.getElementById('currentPath').value;
+            // Update file operations output for shell debuging
+            /*const output = document.getElementById('fileOperationsOutput');
+            const commandLine = document.createElement('div');
+            commandLine.className = 'shell-line';
+            commandLine.innerHTML = `
+                <span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                <span class="shell-prompt">$</span>
+                <span class="shell-command">ls -la ${document.getElementById('currentPath').value}</span>
+            `;
+            output.appendChild(commandLine);
+            output.scrollTop = output.scrollHeight;*/
+        }
 
-          fileSocket.send(JSON.stringify({
-              action: 'move',
-              source: source,
-              destination: destination
-          }));
-      }
+        function navigateUp() {
+            const currentPath = document.getElementById('currentPath').value;
+            // Get parent directory path
+            const parentPath = currentPath.split('/').slice(0, -1).join('/') || '/';
 
-      function handleDragOver(e) {
-          e.preventDefault();
-      }
+            fileSocket.send(JSON.stringify({
+                action: 'cd',
+                path: parentPath
+            }));
 
-      // Shell WebSocket connection
-      const shellSocket = new WebSocket(
-          "ws://" + window.location.host + "/ws/shell/"
-      );
+            // Update UI
+            document.getElementById('currentPath').value = parentPath;
 
-      shellSocket.onmessage = function(e) {
-          const data = JSON.parse(e.data);
-          if (data.type === 'shell_output') {
-              const output = document.getElementById('shellOutput');
-              const lines = data.output.split('\n');
+            // List contents of parent directory
+            fileSocket.send(JSON.stringify({
+                action: 'list',
+                path: parentPath
+            }));
+        }
 
-              // Add command with prompt
-              const commandLine = document.createElement('div');
-              commandLine.className = 'shell-line';
-              commandLine.innerHTML = `<span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span> <span class="shell-prompt">$</span> <span class="shell-command">${document.getElementById('shellCommand').value}</span>`;
-              output.appendChild(commandLine);
+        function refreshFiles() {
+            const currentPath = document.getElementById('currentPath').value;
+            fileSocket.send(JSON.stringify({
+                action: 'list',
+                path: currentPath
+            }));
+        }
 
-              // Process and style each line of output
-              lines.forEach(line => {
-                  if (line.trim()) {
-                      const div = document.createElement('div');
-                      div.className = 'shell-line';
+        // Helper function to format file sizes
+        function formatSize(bytes) {
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let size = bytes;
+            let unitIndex = 0;
 
-                      // Style based on content
-                      if (line.startsWith('error') || line.startsWith('Error') || line.includes('not found')) {
-                          div.classList.add('shell-error');
-                      } else if (line.match(/^drwx|^-rw/)) { // ls output
-                          line = line.replace(/([drwx-]{10})/, '<span class="shell-permission">$1</span>');
-                          if (line.includes('drwx')) {
-                              line = line.replace(/([^\s]+)$/, '<span class="shell-directory">$1</span>');
-                          } else {
-                              line = line.replace(/([^\s]+)$/, '<span class="shell-file">$1</span>');
-                          }
-                      } else if (line.includes('successfully') || line.match(/^done|^ok/i)) {
-                          div.classList.add('shell-success');
-                      }
+            while (size >= 1024 && unitIndex < units.length - 1) {
+                size /= 1024;
+                unitIndex++;
+            }
 
-                      div.innerHTML = line;
-                      output.appendChild(div);
-                  }
+            return `${size.toFixed(1)} ${units[unitIndex]}`;
+        }
+
+        // Drag and drop handlers
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.closest('tr').cells[0].textContent);
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const source = e.dataTransfer.getData('text/plain');
+            const destination = document.getElementById('currentPath').value;
+
+            fileSocket.send(JSON.stringify({
+                action: 'move',
+                source: source,
+                destination: destination
+            }));
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        // Shell WebSocket connection
+        const shellSocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/shell/"
+        );
+
+        shellSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'shell_output') {
+                const output = document.getElementById('shellOutput');
+                const lines = data.output.split('\n');
+
+                // Add command with prompt
+                const commandLine = document.createElement('div');
+                commandLine.className = 'shell-line';
+                commandLine.innerHTML = `<span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span> <span class="shell-prompt">$</span> <span class="shell-command">${document.getElementById('shellCommand').value}</span>`;
+                output.appendChild(commandLine);
+
+                // Process and style each line of output
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        const div = document.createElement('div');
+                        div.className = 'shell-line';
+
+                        // Style based on content
+                        if (line.startsWith('error') || line.startsWith('Error') || line.includes('not found')) {
+                            div.classList.add('shell-error');
+                        } else if (line.match(/^drwx|^-rw/)) {
+                            line = line.replace(/([drwx-]{10})/, '<span class="shell-permission">$1</span>');
+                            if (line.includes('drwx')) {
+                                line = line.replace(/([^\s]+)$/, '<span class="shell-directory">$1</span>');
+                            } else {
+                                line = line.replace(/([^\s]+)$/, '<span class="shell-file">$1</span>');
+                            }
+                        } else if (line.includes('successfully') || line.match(/^done|^ok/i)) {
+                            div.classList.add('shell-success');
+                        }
+
+                        div.innerHTML = line;
+                        output.appendChild(div);
+                    }
+                });
+
+                output.scrollTop = output.scrollHeight;
+            }
+        };
+
+        function sendCommand() {
+            const command = document.getElementById('shellCommand').value;
+            shellSocket.send(JSON.stringify({
+                'command': command
+            }));
+            document.getElementById('shellCommand').value = '';
+        }
+
+        // Support for Enter key
+        document.getElementById('shellCommand').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendCommand();
+            }
+        });
+
+        // Storage WebSocket connection
+        const storageSocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/storage/"
+        );
+
+        storageSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'storage_info') {
+                updateStorageInfo(data.data);
+            }
+        };
+
+        function updateStorageInfo(storageData) {
+            const container = document.getElementById('storageList');
+            container.innerHTML = '';
+
+            storageData.forEach(storage => {
+                const item = document.createElement('div');
+                item.className = 'storage-item';
+                item.innerHTML = `
+                    <h4>${storage.mount_point} (${storage.device})</h4>
+                    <p>Filesystem: ${storage.fs_type}</p>
+                    <div class="storage-progress">
+                        <div class="storage-bar" style="width: ${storage.percent_used}%"></div>
+                    </div>
+                    <p>${formatSize(storage.used)} used of ${formatSize(storage.total)} (${storage.percent_used.toFixed(1)}%)</p>
+                    <p>${formatSize(storage.free)} free</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Vérifiez la connexion WebSocket
+        const temperatureSocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/temperature/"
+        );
+
+        temperatureSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'temperature_info') {
+                if (Object.keys(data.data).length === 0) {
+                    console.error("No temperature data received");
+                } else {
+                    updateTemperatureInfo(data.data);
+                }
+            }
+        };
+
+        // Fonction pour mettre à jour les informations de température
+        function updateTemperatureInfo(tempData) {
+          const container = document.getElementById('temperatureList');
+          container.innerHTML = '';
+
+          for (const [device, sensors] of Object.entries(tempData)) {
+              const deviceDiv = document.createElement('div');
+              deviceDiv.className = 'temperature-item';
+              let html = `<h4>${device}</h4>`;
+
+              sensors.forEach(sensor => {
+                  const percentage = sensor.high ? (sensor.current / sensor.high) * 100 : 0;
+                  const warningClass = percentage > 80 ? 'warning' : percentage > 90 ? 'critical' : '';
+
+                  // Utiliser l'unité fournie par le backend
+                  html += `
+                      <p>${sensor.label}: ${sensor.current.toFixed(1)}${sensor.unit}</p>
+                      <div class="temperature-progress">
+                          <div class="temperature-bar ${warningClass}"
+                              style="width: ${percentage}%"></div>
+                      </div>
+                      ${sensor.high ? `<small>Max: ${sensor.high}${sensor.unit}</small>` : ''}
+                      ${sensor.critical ? `<small>Critical: ${sensor.critical}${sensor.unit}</small>` : ''}
+                  `;
               });
 
-              output.scrollTop = output.scrollHeight;
+              deviceDiv.innerHTML = html;
+              container.appendChild(deviceDiv);
           }
-      };
-
-      function sendCommand() {
-          const command = document.getElementById('shellCommand').value;
-          shellSocket.send(JSON.stringify({
-              'command': command
-          }));
-          document.getElementById('shellCommand').value = '';
-      }
-
-      // Support for Enter key
-      document.getElementById('shellCommand').addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-              sendCommand();
-          }
-      });
-
-      // Storage WebSocket connection
-      const storageSocket = new WebSocket(
-        "ws://" + window.location.host + "/ws/storage/"
-      );
-
-      storageSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        if (data.type === 'storage_info') {
-            updateStorageInfo(data.data);
-        }
-      };
-
-      function updateStorageInfo(storageData) {
-        const container = document.getElementById('storageList');
-        container.innerHTML = '';
-        
-        storageData.forEach(storage => {
-            const item = document.createElement('div');
-            item.className = 'storage-item';
-            item.innerHTML = `
-                <h4>${storage.mount_point} (${storage.device})</h4>
-                <p>Filesystem: ${storage.fs_type}</p>
-                <div class="storage-progress">
-                    <div class="storage-bar" style="width: ${storage.percent_used}%"></div>
-                </div>
-                <p>${formatSize(storage.used)} used of ${formatSize(storage.total)} (${storage.percent_used.toFixed(1)}%)</p>
-                <p>${formatSize(storage.free)} free</p>
-            `;
-            container.appendChild(item);
-        });
       }
     </script>
   </body>

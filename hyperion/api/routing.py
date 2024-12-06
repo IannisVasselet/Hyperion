@@ -1,6 +1,10 @@
 # api/routing.py
 from django.urls import path
-from .consumers import ProcessConsumer, ServiceConsumer, NetworkConsumer, CPUConsumer, MemoryConsumer, FileSystemConsumer, ShellConsumer, StorageConsumer
+from .consumers import (
+    ProcessConsumer, ServiceConsumer, NetworkConsumer,
+    CPUConsumer, MemoryConsumer, FileSystemConsumer,
+    ShellConsumer, StorageConsumer, TemperatureConsumer
+    )
 
 websocket_urlpatterns = [
     path('ws/processes/', ProcessConsumer.as_asgi()),
@@ -11,4 +15,5 @@ websocket_urlpatterns = [
     path('ws/files/', FileSystemConsumer.as_asgi()),
     path('ws/shell/', ShellConsumer.as_asgi()),
     path('ws/storage/', StorageConsumer.as_asgi()),
+    path('ws/temperature/', TemperatureConsumer.as_asgi()),
 ]

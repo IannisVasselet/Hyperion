@@ -1,14 +1,14 @@
 # api/utils.py
-import psutil
-import paramiko
-import subprocess
-import socket
-import netifaces
-from typing import List, Dict
 import os
 import shutil
-from datetime import datetime 
-from pathlib import Path
+import subprocess
+from datetime import datetime
+from typing import List, Dict
+
+import netifaces
+import paramiko
+import psutil
+
 
 def get_processes():
     processes = []
@@ -25,6 +25,7 @@ def get_processes():
             pass
     return sorted(processes, key=lambda x: x['cpu_percent'], reverse=True)
 
+
 def stop_process(pid):
     try:
         process = psutil.Process(pid)
@@ -33,6 +34,7 @@ def stop_process(pid):
     except psutil.NoSuchProcess:
         return False
 
+
 def change_process_priority(pid, priority):
     try:
         process = psutil.Process(pid)
@@ -40,6 +42,7 @@ def change_process_priority(pid, priority):
         return True
     except psutil.NoSuchProcess:
         return False
+
 
 def get_services():
     services = []
@@ -66,12 +69,14 @@ def get_services():
                 })
     return services
 
+
 def start_service(service_name):
     try:
         subprocess.check_call(['systemctl', 'start', f'{service_name}.service'])
         return True
     except:
         return False
+
 
 def stop_service(service_name):
     try:
@@ -80,12 +85,14 @@ def stop_service(service_name):
     except:
         return False
 
+
 def restart_service(service_name):
     try:
         subprocess.check_call(['systemctl', 'restart', f'{service_name}.service'])
         return True
     except:
         return False
+
 
 def get_network_usage():
     network_stats = []
@@ -97,31 +104,34 @@ def get_network_usage():
         })
     return network_stats
 
+
 def block_ip(ip_address: str) -> bool:
     """Block an IP address using iptables"""
     try:
         subprocess.check_call([
-            'sudo', 'iptables', 
-            '-A', 'INPUT', 
-            '-s', ip_address, 
+            'sudo', 'iptables',
+            '-A', 'INPUT',
+            '-s', ip_address,
             '-j', 'DROP'
         ])
         return True
     except subprocess.CalledProcessError:
         return False
 
+
 def unblock_ip(ip_address: str) -> bool:
     """Unblock a previously blocked IP address"""
     try:
         subprocess.check_call([
-            'sudo', 'iptables', 
-            '-D', 'INPUT', 
-            '-s', ip_address, 
+            'sudo', 'iptables',
+            '-D', 'INPUT',
+            '-s', ip_address,
             '-j', 'DROP'
         ])
         return True
     except subprocess.CalledProcessError:
         return False
+
 
 def block_port(port: int, protocol: str = 'tcp') -> bool:
     """Block a specific port using iptables"""
@@ -137,6 +147,7 @@ def block_port(port: int, protocol: str = 'tcp') -> bool:
     except subprocess.CalledProcessError:
         return False
 
+
 def get_network_interfaces() -> List[Dict]:
     """Get detailed information about network interfaces"""
     interfaces = []
@@ -145,7 +156,7 @@ def get_network_interfaces() -> List[Dict]:
             addrs = netifaces.ifaddresses(iface)
             ipv4 = addrs.get(netifaces.AF_INET, [])
             ipv6 = addrs.get(netifaces.AF_INET6, [])
-            
+
             interface_info = {
                 'name': iface,
                 'ipv4': [addr['addr'] for addr in ipv4],
@@ -159,6 +170,7 @@ def get_network_interfaces() -> List[Dict]:
             continue
     return interfaces
 
+
 def configure_interface(interface_name: str, config: Dict) -> bool:
     """Configure a network interface"""
     try:
@@ -169,14 +181,14 @@ def configure_interface(interface_name: str, config: Dict) -> bool:
                 config['ip_address'],
                 'dev', interface_name
             ])
-        
+
         # Set MTU
         if 'mtu' in config:
             subprocess.check_call([
                 'sudo', 'ip', 'link', 'set',
                 interface_name, 'mtu', str(config['mtu'])
             ])
-        
+
         # Set interface up/down
         if 'up' in config:
             action = 'up' if config['up'] else 'down'
@@ -184,10 +196,11 @@ def configure_interface(interface_name: str, config: Dict) -> bool:
                 'sudo', 'ip', 'link', 'set',
                 interface_name, action
             ])
-            
+
         return True
     except subprocess.CalledProcessError:
         return False
+
 
 def execute_ssh_command(host, port, username, password, command):
     ssh = paramiko.SSHClient()
@@ -197,6 +210,7 @@ def execute_ssh_command(host, port, username, password, command):
     result = stdout.read().decode('utf-8')
     ssh.close()
     return result
+
 
 def get_file_info(path: str) -> dict:
     """Get file or directory information"""
@@ -215,6 +229,7 @@ def get_file_info(path: str) -> dict:
     except (FileNotFoundError, PermissionError):
         return None
 
+
 def list_directory(path: str) -> List[dict]:
     """List contents of a directory"""
     contents = []
@@ -230,6 +245,7 @@ def list_directory(path: str) -> List[dict]:
     except (FileNotFoundError, PermissionError):
         return []
 
+
 def move_file(source: str, destination: str) -> bool:
     """Move file or directory"""
     try:
@@ -237,6 +253,7 @@ def move_file(source: str, destination: str) -> bool:
         return True
     except Exception:
         return False
+
 
 def delete_file(path: str) -> bool:
     """Delete file or directory"""
@@ -248,6 +265,7 @@ def delete_file(path: str) -> bool:
         return True
     except Exception:
         return False
+
 
 def get_storage_info():
     storage_info = []
@@ -264,3 +282,78 @@ def get_storage_info():
                 'fs_type': partition.fstype
             })
     return storage_info
+
+def get_system_temperatures():
+    try:
+        temps = {}
+        
+        # CPU Temperature and Usage
+        temps['CPU'] = [{
+            'label': 'CPU Usage',
+            'current': psutil.cpu_percent(),
+            'high': 80.0,
+            'critical': 90.0,
+            'unit': '%'
+        }]
+        
+        # Memory Information
+        memory = psutil.virtual_memory()
+        temps['Memory'] = [{
+            'label': 'Memory Usage',
+            'current': memory.percent,
+            'high': 80.0,
+            'critical': 90.0,
+            'unit': '%'
+        }]
+        
+        # Disk Temperatures and Usage
+        temps['Storage'] = []
+        for partition in psutil.disk_partitions():
+            if partition.mountpoint:
+                try:
+                    usage = psutil.disk_usage(partition.mountpoint)
+                    temps['Storage'].append({
+                        'label': f'Disk Usage ({partition.mountpoint})',
+                        'current': usage.percent,
+                        'high': 80.0,
+                        'critical': 90.0,
+                        'unit': '%'
+                    })
+                except Exception:
+                    continue
+        
+        # Battery Information
+        try:
+            battery = psutil.sensors_battery()
+            if battery:
+                temps['Battery'] = [{
+                    'label': 'Battery Level',
+                    'current': battery.percent,
+                    'high': 20.0,  # Warning when below 20%
+                    'critical': 10.0,  # Critical when below 10%
+                    'unit': '%'
+                }]
+        except Exception:
+            pass
+            
+        # Fans Information (if available)
+        try:
+            fans = psutil.sensors_fans()
+            if fans:
+                temps['Fans'] = []
+                for fan_name, entries in fans.items():
+                    for entry in entries:
+                        temps['Fans'].append({
+                            'label': f'Fan {fan_name}',
+                            'current': entry.current,
+                            'high': 3000,
+                            'critical': 4000,
+                            'unit': 'RPM'
+                        })
+        except Exception:
+            pass
+
+        return temps
+    except Exception as e:
+        print(f"Error retrieving system information: {e}")
+        return {}
