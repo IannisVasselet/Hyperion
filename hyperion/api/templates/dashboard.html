@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hyperion Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="cpu-data" type="application/json">
       [{ "recorded_at": "2023-10-01T00:00:00Z", "usage": 20 }]
@@ -20,11 +24,80 @@
         transition: background-color 0.3s, color 0.3s;
         padding: 20px;
       }
+      canvas {
+        max-width: 100%;
+      }
+      .nav-menu {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 250px;
+        background: #2c3e50;
+        padding: 20px 0;
+        color: white;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        height: 100vh;
+      }
+
+      .nav-menu h2 {
+        padding: 0 20px;
+        margin-bottom: 20px;
+        color: white;
+      }
+
+      .nav-menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .nav-menu li {
+        padding: 0;
+      }
+
+      .nav-menu a {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        color: #ecf0f1;
+        text-decoration: none;
+        transition: background 0.3s;
+      }
+
+      .nav-menu a:hover {
+        background: #34495e;
+      }
+
+      .nav-menu .active {
+        background: #3498db;
+      }
+
+      .nav-menu i {
+        margin-right: 10px;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        margin-top: 60px;
+      }
+
+      /* Pour le mode sombre */
+      .dark-mode .nav-menu {
+        background: #1a1a1a;
+      }
+
+      .dark-mode .nav-menu a:hover {
+        background: #2c2c2c;
+      }
       .container {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         margin-bottom: 20px;
+        width: 100%;
       }
       .scrollable-list {
         max-height: 300px;
@@ -44,7 +117,45 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 20px;
+        height: 500px;
+        width: 100%;
+        padding: 20px;
       }
+      .chart-controls {
+        margin-bottom: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+      }
+      
+      .chart-controls select {
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        width: 250px;
+        font-size: 14px;
+      }
+      
+      .dark-mode .chart-controls select {
+        background-color: #333;
+        border-color: #555;
+        color: #fff;
+      }
+      
+      .chart-container {
+        position: relative;
+        height: 400px !important;
+        width: 100% !important;
+        margin: 0 auto;
+      }
+
+      .widget.monitoring {
+        padding: 20px;
+        margin-bottom: 30px;
+        height: auto;
+        min-height: 600px; /* Hauteur minimale pour le widget */
+      } 
       .dark-mode .widget {
         background-color: #444;
         border-color: #555;
@@ -78,6 +189,10 @@
       .dark-mode .widget {
         background-color: #444;
         border-color: #555;
+      }
+      /* Ajuster les widgets pour qu'ils soient en grille */
+      #monitoring, #services, #network, #files, #shell {
+          grid-column: span 2;
       }
       .theme-toggle {
         position: fixed;
@@ -381,186 +496,259 @@
     </style>
   </head>
   <body>
-    <header>
-      <h1>Hyperion Dashboard</h1>
-      <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
-    </header>
-    <main>
-      <!-- Processes table below -->
-      <div class="container">
-        <div class="widget">
-          <h3>Processes</h3>
-          <div class="controls">
-            <input
-              type="text"
-              id="processFilter"
-              placeholder="Filter processes..."
-              onkeyup="filterProcesses()"
-            />
-            <select id="processSorting" onchange="sortProcesses()">
-              <option value="cpu">Sort by CPU</option>
-              <option value="memory">Sort by Memory</option>
-              <option value="name">Sort by Name</option>
-            </select>
+    <nav class="nav-menu">
+      <h2>Hyperion</h2>
+      <ul>
+        <li>
+          <a href="#monitoring" class="active">
+            <i class="fas fa-chart-line"></i>
+            System Monitoring
+          </a>
+        </li>
+        <li>
+          <a href="#processes">
+            <i class="fas fa-microchip"></i>
+            Processes
+          </a>
+        </li>
+        <li>
+          <a href="#services">
+            <i class="fas fa-cogs"></i>
+            Services
+          </a>
+        </li>
+        <li>
+          <a href="#files">
+            <i class="fas fa-folder"></i>
+            File Management
+          </a>
+        </li>
+        <li>
+          <a href="#network">
+            <i class="fas fa-network-wired"></i>
+            Network
+          </a>
+        </li>
+        <li>
+          <a href="#shell">
+            <i class="fas fa-terminal"></i>
+            Shell
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </a>
+      </ul>
+    </nav>
+    <div class="main-content">
+      <header>
+        <h1>Hyperion Dashboard</h1>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          Toggle Theme
+        </button>
+      </header>
+      <main>
+        <!-- Processes table below -->
+        <div class="container">
+          <div class="widget" id="monitoring">
+            <h3>Processes</h3>
+            <div class="controls">
+              <input
+                type="text"
+                id="processFilter"
+                placeholder="Filter processes..."
+                onkeyup="filterProcesses()"
+              />
+              <select id="processSorting" onchange="sortProcesses()">
+                <option value="cpu">Sort by CPU</option>
+                <option value="memory">Sort by Memory</option>
+                <option value="name">Sort by Name</option>
+              </select>
+            </div>
+            <div class="scrollable-list">
+              <table class="process-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>PID</th>
+                    <th>Status</th>
+                    <th>CPU %</th>
+                    <th>Memory %</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="processesTableBody"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="scrollable-list">
-            <table class="process-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>PID</th>
-                  <th>Status</th>
-                  <th>CPU %</th>
-                  <th>Memory %</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="processesTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-        <!-- Services table below -->
-        <div class="widget">
-          <h3>Services</h3>
-          <div class="scrollable-list">
-            <table class="service-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="servicesTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts below -->
-      <div class="charts-container">
-        <div class="widget">
-          <h3>CPU Usage</h3>
-          <div style="height: 300px">
-            <canvas id="cpuChart"></canvas>
-          </div>
-        </div>
-        <div class="widget">
-          <h3>Memory Usage</h3>
-          <div style="height: 300px">
-            <canvas id="memoryChart"></canvas>
-          </div>
-        </div>
-        <div class="widget">
-          <h3>Network Usage</h3>
-          <canvas id="networkChart"></canvas>
-        </div>
-      </div>
-      <div class="widget">
-        <h3>Network Security</h3>
-        <div class="network-controls">
-          <!-- IP Blocking -->
-          <div class="control-group ip-blocking">
-            <input
-              type="text"
-              id="ipAddress"
-              placeholder="IP Address (ex: 192.168.1.1)"
-            />
-            <button
-              onclick="blockIP(document.getElementById('ipAddress').value)"
-            >
-              Block IP
-            </button>
-          </div>
-
-          <!-- Port Management -->
-          <div class="control-group port-blocking">
-            <input type="number" id="portNumber" placeholder="Port (1-65535)" />
-            <select id="protocol">
-              <option value="tcp">TCP</option>
-              <option value="udp">UDP</option>
-            </select>
-            <button
-              onclick="blockPort(
-                    document.getElementById('portNumber').value,
-                    document.getElementById('protocol').value
-                )"
-            >
-              Block Port
-            </button>
+          <!-- Services table below -->
+          <div class="widget" id="services">
+            <h3>Services</h3>
+            <div class="scrollable-list">
+              <table class="service-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="servicesTableBody"></tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- Interface Configuration -->
-          <div class="control-group interface-config">
-            <select id="networkInterface">
-              <option value="">Select Interface</option>
-            </select>
-            <input type="text" id="ipConfig" placeholder="IP Configuration" />
-            <input type="number" id="mtu" placeholder="MTU" />
-            <button
-              onclick="configureInterface(
-                    document.getElementById('networkInterface').value,
-                    {
-                        ip_address: document.getElementById('ipConfig').value,
-                        mtu: document.getElementById('mtu').value
-                    }
-                )"
+        <!-- Charts below -->
+        <div class="charts-container">
+          <div class="widget">
+            <div class="chart-controls">
+              <select id="chartSelector" onchange="switchChart()">
+                <option value="cpu">CPU Usage</option>
+                <option value="memory">Memory Usage</option>
+                <option value="network">Network Usage</option>
+              </select>
+            </div>
+            <div>
+              <!-- Chart containers -->
+              <div id="cpuChartContainer" class="chart-container" style="height: 300px">
+                <canvas id="cpuChart"></canvas>
+              </div>
+              <div id="memoryChartContainer" class="chart-container" style="display: none; height: 300px">
+                <canvas id="memoryChart"></canvas>
+              </div>
+              <div id="networkChartContainer" class="chart-container" style="display: none;">
+                <canvas id="networkChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+          <div class="widget" id="network">
+            <h3>Network Security</h3>
+            <div class="network-controls">
+              <!-- IP Blocking -->
+              <div class="control-group ip-blocking">
+                <input
+                  type="text"
+                  id="ipAddress"
+                  placeholder="IP Address (ex: 192.168.1.1)"
+                />
+                <button
+                  onclick="blockIP(document.getElementById('ipAddress').value)"
+                >
+                  Block IP
+                </button>
+              </div>
+
+              <!-- Port Management -->
+              <div class="control-group port-blocking">
+                <input
+                  type="number"
+                  id="portNumber"
+                  placeholder="Port (1-65535)"
+                />
+                <select id="protocol">
+                  <option value="tcp">TCP</option>
+                  <option value="udp">UDP</option>
+                </select>
+                <button
+                  onclick="blockPort(
+                      document.getElementById('portNumber').value,
+                      document.getElementById('protocol').value
+                  )"
+                >
+                  Block Port
+                </button>
+              </div>
+
+              <!-- Interface Configuration -->
+              <div class="control-group interface-config">
+                <select id="networkInterface">
+                  <option value="">Select Interface</option>
+                </select>
+                <input type="text" id="ipConfig" placeholder="IP Configuration" />
+                <input type="number" id="mtu" placeholder="MTU" />
+                <button
+                  onclick="configureInterface(
+                      document.getElementById('networkInterface').value,
+                      {
+                          ip_address: document.getElementById('ipConfig').value,
+                          mtu: document.getElementById('mtu').value
+                      }
+                  )"
+                >
+                  Configure Interface
+                </button>
+              </div>
+            </div>
+          </div>
+        <!-- File Management -->
+          <div class="widget" id="files">
+            <h3>File Management</h3>
+            <div class="file-controls">
+              <input type="text" id="currentPath" value="/" readonly />
+              <button onclick="navigateUp()">Up</button>
+              <button onclick="refreshFiles()">Refresh</button>
+            </div>
+            <div
+              class="scrollable-list"
+              id="fileList"
+              ondrop="handleDrop(event)"
+              ondragover="handleDragOver(event)"
             >
-              Configure Interface
-            </button>
+              <table class="file-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Modified</th>
+                    <th>Permissions</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="fileTableBody"></tbody>
+              </table>
+              <!-- Outputshell for debug -->
+              {% comment %}
+              <div id="fileOperationsOutput" class="shell-output"></div>
+              {% endcomment %}
+            </div>
           </div>
-        </div>
-      </div>
-      <!-- File Management Widget -->
-      <!-- File Management Widget -->
-      <div class="widget">
-        <h3>File Management</h3>
-        <div class="file-controls">
-          <input type="text" id="currentPath" value="/" readonly />
-          <button onclick="navigateUp()">Up</button>
-          <button onclick="refreshFiles()">Refresh</button>
-        </div>
-        <div
-          class="scrollable-list"
-          id="fileList"
-          ondrop="handleDrop(event)"
-          ondragover="handleDragOver(event)"
-        >
-          <table class="file-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Size</th>
-                <th>Modified</th>
-                <th>Permissions</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="fileTableBody"></tbody>
-          </table>
-          <!-- Outputshell for debug -->
-          {% comment %} <div id="fileOperationsOutput" class="shell-output"></div> {% endcomment %}
-        </div>
-      </div>
-      <!-- Shell Widget -->
-      <div class="widget">
-        <h3>Shell</h3>
-        <div class="shell-container">
-          <div id="shellOutput" class="shell-output"></div>
-          <div class="shell-input">
-            <input
-              type="text"
-              id="shellCommand"
-              placeholder="Enter command..."
-            />
-            <button onclick="sendCommand()">Send</button>
+        <!-- Shell -->
+          <div class="widget" id="shell">
+            <h3>Shell</h3>
+            <div class="shell-container">
+              <div id="shellOutput" class="shell-output"></div>
+              <div class="shell-input">
+                <input
+                  type="text"
+                  id="shellCommand"
+                  placeholder="Enter command..."
+                />
+                <button onclick="sendCommand()">Send</button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </main>
+        </div
+      </main>
+    </div>
 
     <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                    const navLinks = document.querySelectorAll('.nav-menu a');
+
+                    navLinks.forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            // Enlever la classe active de tous les liens
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            // Ajouter la classe active au lien cliqué
+                            this.classList.add('active');
+                        });
+                    });
+                });
                 const cpuData = JSON.parse(
                   document.getElementById("cpu-data").textContent
                 );
@@ -596,6 +784,25 @@
                       },
                     ],
                   },
+                });
+                function switchChart() {
+                    const selectedChart = document.getElementById('chartSelector').value;
+                    
+                    // Hide all charts
+                    document.getElementById('cpuChartContainer').style.display = 'none';
+                    document.getElementById('memoryChartContainer').style.display = 'none';
+                    document.getElementById('networkChartContainer').style.display = 'none';
+                    
+                    // Show selected chart
+                    document.getElementById(`${selectedChart}ChartContainer`).style.display = 'block';
+                    
+                    // Trigger resize to fix chart rendering
+                    window.dispatchEvent(new Event('resize'));
+                }
+                
+                // Initial load
+                document.addEventListener('DOMContentLoaded', function() {
+                    switchChart();
                 });
 
                 function toggleTheme() {
