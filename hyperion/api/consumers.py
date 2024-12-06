@@ -11,6 +11,7 @@ from .utils import (
     stop_process, start_service, stop_service, restart_service,
     block_ip, unblock_ip, block_port, get_network_interfaces,
     list_directory, move_file, delete_file,
+    get_storage_info,
 )
 
 class ProcessConsumer(AsyncWebsocketConsumer):
@@ -313,3 +314,25 @@ class ShellConsumer(AsyncWebsocketConsumer):
                     'type': 'shell_output',
                     'output': f"Error: {str(e)}"
                 }))
+                
+class StorageConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.is_connected = True
+        asyncio.create_task(self.send_periodic_updates())
+
+    async def disconnect(self, close_code):
+        self.is_connected = False
+
+    @sync_to_async
+    def get_storage_data(self):
+        return get_storage_info()
+
+    async def send_periodic_updates(self):
+        while self.is_connected:
+            data = await self.get_storage_data()
+            await self.send(text_data=json.dumps({
+                'type': 'storage_info',
+                'data': data
+            }))
+            await asyncio.sleep(30)  # Update every 30 seconds

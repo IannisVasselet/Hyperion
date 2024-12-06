@@ -1,6 +1,7 @@
 # api/tasks.py
 from celery import shared_task
-from .models import CPUUsage, MemoryUsage, NetworkUsage
+from .models import CPUUsage, MemoryUsage, NetworkUsage, StorageUsage
+from .utils import get_storage_info
 import psutil
 import requests
 from django.conf import settings
@@ -41,3 +42,8 @@ def send_email_notification(subject, message, recipient_list):
 def record_cpu_usage():
     usage = psutil.cpu_percent(interval=1)
     CPUUsage.objects.create(usage=usage)
+    
+@shared_task
+def record_storage_usage():
+    for info in get_storage_info():
+        StorageUsage.objects.create(**info)

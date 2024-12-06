@@ -248,3 +248,19 @@ def delete_file(path: str) -> bool:
         return True
     except Exception:
         return False
+
+def get_storage_info():
+    storage_info = []
+    for partition in psutil.disk_partitions(all=False):
+        if partition.mountpoint and partition.fstype:
+            usage = psutil.disk_usage(partition.mountpoint)
+            storage_info.append({
+                'device': partition.device,
+                'mount_point': partition.mountpoint,
+                'total': usage.total,
+                'used': usage.used,
+                'free': usage.free,
+                'percent_used': usage.percent,
+                'fs_type': partition.fstype
+            })
+    return storage_info

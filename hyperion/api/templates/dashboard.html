@@ -142,19 +142,40 @@
         border-color: #555;
         color: #fff;
       }
-      
       .chart-container {
         position: relative;
         height: 400px !important;
         width: 100% !important;
         margin: 0 auto;
       }
-
+      .storage-container {
+        display: grid;
+        gap: 15px;
+        padding: 10px;
+      }
+      .storage-item {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          padding: 15px;
+      }
+      .storage-progress {
+          width: 100%;
+          height: 20px;
+          background: #ddd;
+          border-radius: 10px;
+          overflow: hidden;
+          margin: 10px 0;
+      }     
+      .storage-bar {
+          height: 100%;
+          background: linear-gradient(90deg, #4CAF50, #FF9800);
+          transition: width 0.3s ease;
+      }
       .widget.monitoring {
         padding: 20px;
         margin-bottom: 30px;
         height: auto;
-        min-height: 600px; /* Hauteur minimale pour le widget */
+        min-height: 600px;
       } 
       .dark-mode .widget {
         background-color: #444;
@@ -622,6 +643,13 @@
                 <canvas id="networkChart"></canvas>
               </div>
             </div>
+          </div>
+        </div>
+        <!-- Storage Widget -->
+        <div class="widget" id="storage">
+          <h3>Storage Analysis</h3>
+          <div class="storage-container scrollable-list">
+              <div id="storageList"></div>
           </div>
         </div>
         </div>
@@ -1322,6 +1350,38 @@
               sendCommand();
           }
       });
+
+      // Storage WebSocket connection
+      const storageSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/storage/"
+      );
+
+      storageSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'storage_info') {
+            updateStorageInfo(data.data);
+        }
+      };
+
+      function updateStorageInfo(storageData) {
+        const container = document.getElementById('storageList');
+        container.innerHTML = '';
+        
+        storageData.forEach(storage => {
+            const item = document.createElement('div');
+            item.className = 'storage-item';
+            item.innerHTML = `
+                <h4>${storage.mount_point} (${storage.device})</h4>
+                <p>Filesystem: ${storage.fs_type}</p>
+                <div class="storage-progress">
+                    <div class="storage-bar" style="width: ${storage.percent_used}%"></div>
+                </div>
+                <p>${formatSize(storage.used)} used of ${formatSize(storage.total)} (${storage.percent_used.toFixed(1)}%)</p>
+                <p>${formatSize(storage.free)} free</p>
+            `;
+            container.appendChild(item);
+        });
+      }
     </script>
   </body>
 </html>

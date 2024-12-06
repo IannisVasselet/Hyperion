@@ -80,3 +80,13 @@ class AuditLog(models.Model):
     
     class Meta:
         ordering = ['-timestamp']
+        
+class StorageUsage(models.Model):
+    device = models.CharField(max_length=100)  # /dev/sda1, etc.
+    mount_point = models.CharField(max_length=255)  # /, /home, etc.
+    total = models.BigIntegerField()  # Total space in bytes
+    used = models.BigIntegerField()  # Used space in bytes
+    free = models.BigIntegerField()  # Free space in bytes
+    percent_used = models.FloatField()  # Percentage used
+    fs_type = models.CharField(max_length=50)  # ext4, ntfs, etc.
+    recorded_at = models.DateTimeField(auto_now_add=True)
