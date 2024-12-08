@@ -1,19 +1,58 @@
 <div class="container">
-    <h2>Set Up Two-Factor Authentication</h2>
-    <div class="setup-steps">
-        <p>Scan the QR code below with your authenticator app (like Google Authenticator)</p>
-        
-        <div class="qr-code">
-            {{ qr_code|safe }}
-        </div>
+  <h2>Set Up Two-Factor Authentication</h2>
+  <div class="setup-steps">
+    <p>
+      Scan this QR code with your authenticator app (like Google Authenticator)
+    </p>
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <label>Enter the verification code shown in your app:</label>
-                {{ form.as_p }}
-            </div>
-            <button type="submit" class="btn btn-primary">Verify Code</button>
-        </form>
-    </div>
+    <div class="qr-code">{{ qr_code|safe }}</div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Enter the verification code shown in your app:</label>
+        {{ form.as_p }}
+      </div>
+      <button type="submit" class="btn btn-primary">Verify Code</button>
+    </form>
+  </div>
 </div>
+
+<style>
+  .container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .qr-code {
+    text-align: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+
+  .qr-code svg {
+    width: 200px;
+    height: 200px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+  }
+</style>

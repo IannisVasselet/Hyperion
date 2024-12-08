@@ -45,8 +45,44 @@ class FileSystem(models.Model):
     owner = models.CharField(max_length=50)
     group = models.CharField(max_length=50)
     
+class Role(models.Model):
+    name = models.CharField(max_length=50)
+    permissions = models.JSONField(default=dict)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    AVAILABLE_PERMISSIONS = {
+        'view_processes': 'View system processes',
+        'manage_processes': 'Manage system processes',
+        'view_services': 'View system services',
+        'manage_services': 'Manage system services',
+        'view_files': 'View files',
+        'manage_files': 'Manage files',
+        'manage_network': 'Manage network settings',
+        'manage_roles': 'Manage user roles',
+        'manage_users': 'Manage users',
+        'view_analytics': 'View system analytics'
+    }
+
+    def __str__(self):
+        return self.name
+
+    def has_permission(self, permission):
+        return self.permissions.get(permission, False)
+    class Meta:
+        verbose_name = 'Role'
+        verbose_name_plural = 'Roles'
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def permission_list(self):
+        return self.permissions.keys()
+    
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = models.CharField(max_length=32, blank=True)
     last_login_ip = models.GenericIPAddressField(null=True)
@@ -58,9 +94,12 @@ class UserProfile(models.Model):
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    """Create or get UserProfile when User is created"""
     if created:
         UserProfile.objects.create(user=instance)
-
+    else:
+        # Get or create for existing users
+        UserProfile.objects.get_or_create(user=instance)
 class AuditLog(models.Model):
     ACTION_CHOICES = (
         ('login', 'Login'),

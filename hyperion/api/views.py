@@ -2,11 +2,13 @@
 from django.shortcuts import render
 from django.core.serializers import serialize
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import FormView
 from django.urls import reverse_lazy
+from django import forms
 import json
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -22,17 +24,24 @@ from rest_framework.decorators import action
 
 from .models import (
     Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage,
-    UserProfile, AuditLog
+    UserProfile, AuditLog, Role
     )
 from .serializers import ProcessSerializer, ServiceSerializer, NetworkSerializer
-from .utils import get_processes, stop_process, change_process_priority, get_services, execute_ssh_command, block_ip, unblock_ip, block_port, get_network_interfaces, configure_interface
+from .utils import (
+    get_processes, stop_process, change_process_priority,
+    get_services, execute_ssh_command, block_ip, unblock_ip,
+    block_port, get_network_interfaces, configure_interface
+    )
 from .tasks import send_slack_notification, send_email_notification
+from .decorators import require_permission
 
 class ProcessViewSet(viewsets.ViewSet):
+    @require_permission('view_processes')
     def list(self, request):
         processes = get_processes()
         return Response(processes)
 
+    @require_permission('manage_processes')
     @action(detail=True, methods=['post'])
     def stop(self, request, pk=None):
         if stop_process(int(pk)):
@@ -165,22 +174,43 @@ class LoginView(View):
         return render(request, 'registration/login.html', {
             'error_message': 'Invalid username or password'
         })
-
-class LogoutView(LoginRequiredMixin, View):
+        
+class LogoutView(View):
     def get(self, request):
-        AuditLog.objects.create(
-            user=request.user,
-            action='logout',
-            details=f'Logout from {request.META.get("REMOTE_ADDR")}',
-            ip_address=request.META.get('REMOTE_ADDR')
-        )
-        logout(request)
+        if request.user.is_authenticated:
+            # Log the logout action
+            AuditLog.objects.create(
+                user=request.user,
+                action='logout',
+                details=f'Logout from {request.META.get("REMOTE_ADDR")}',
+                ip_address=request.META.get('REMOTE_ADDR')
+            )
+            logout(request)
         return redirect('login')
+
+class TOTPDeviceForm(forms.Form):
+    token = forms.CharField(max_length=6)
+
+    def __init__(self, key, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.key = key
+        self.user = user
 
 class TwoFactorSetupView(LoginRequiredMixin, FormView):
     template_name = 'two_factor/setup.html'
     form_class = TOTPDeviceForm
-    success_url = reverse_lazy('two-factor-complete')
+    success_url = reverse_lazy('dashboard')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # Generate a new secret key if we don't have one
+        if not hasattr(self, 'device'):
+            self.device = TOTPDevice(user=self.request.user, confirmed=False)
+            self.device.key = random_hex()
+
+        kwargs['key'] = self.device.key
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -188,14 +218,31 @@ class TwoFactorSetupView(LoginRequiredMixin, FormView):
             self.device = TOTPDevice(user=self.request.user, confirmed=False)
             self.device.key = random_hex()
             
-        config = self.device.config_url
-        img = qrcode.make(config, image_factory=qrcode.image.svg.SvgImage)
+        # Generate provisioning URI for QR code
+        provisioning_uri = f"otpauth://totp/Hyperion:{self.request.user.username}?secret={self.device.key}&issuer=Hyperion"
+        
+        # Generate QR code
+        img = qrcode.make(
+            provisioning_uri,
+            image_factory=qrcode.image.svg.SvgImage,
+            box_size=10,
+            border=5
+        )
+        
+        # Convert QR code to string
         context['qr_code'] = img.to_string().decode('utf-8')
         return context
 
     def form_valid(self, form):
         self.device.confirmed = True
         self.device.save()
+        
+        # Update user profile
+        profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        profile.two_factor_enabled = True
+        profile.two_factor_secret = self.device.key
+        profile.save()
+        
         return super().form_valid(form)
 
 class TwoFactorVerifyView(View):
@@ -207,24 +254,89 @@ class TwoFactorVerifyView(View):
     def post(self, request):
         token = request.POST.get('token')
         user_id = request.session.get('pre_2fa_user_id')
-        user = User.objects.get(id=user_id)
-        device = TOTPDevice.objects.get(user=user)
-
-        if device.verify_token(token):
-            login(request, user)
-            del request.session['pre_2fa_user_id']
+        try:
+            user = User.objects.get(id=user_id)
+            device = TOTPDevice.objects.get(user=user)
+            
+            if device.verify_token(token):
+                login(request, user)
+                del request.session['pre_2fa_user_id']
+                AuditLog.objects.create(
+                    user=user,
+                    action='2fa_success',
+                    details=f'2FA verification from {request.META.get("REMOTE_ADDR")}',
+                    ip_address=request.META.get('REMOTE_ADDR')
+                )
+                return redirect('dashboard')
+            
             AuditLog.objects.create(
                 user=user,
-                action='2fa_success',
-                details=f'2FA verification from {request.META.get("REMOTE_ADDR")}',
+                action='2fa_failed',
+                details=f'Failed 2FA attempt from {request.META.get("REMOTE_ADDR")}',
                 ip_address=request.META.get('REMOTE_ADDR')
             )
-            return redirect('dashboard')
+            return render(request, 'registration/2fa_verify.html', {'error': 'Invalid token'})
+        except (User.DoesNotExist, TOTPDevice.DoesNotExist):
+            return redirect('login')
         
-        AuditLog.objects.create(
-            user=user,
-            action='2fa_failed',
-            details=f'Failed 2FA attempt from {request.META.get("REMOTE_ADDR")}',
-            ip_address=request.META.get('REMOTE_ADDR')
-        )
-        return render(request, 'registration/2fa_verify.html', {'error': 'Invalid token'})
+class TwoFactorManageView(LoginRequiredMixin, View):
+    template_name = 'two_factor/manage.html'
+    
+    def get(self, request):
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        context = {
+            'two_factor_enabled': profile.two_factor_enabled
+        }
+        return render(request, 'two_factor/manage.html', context)
+
+    def post(self, request):
+        action = request.POST.get('action')
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        if action == 'disable':
+            profile.two_factor_enabled = False
+            profile.two_factor_secret = ''
+            profile.save()
+            
+            TOTPDevice.objects.filter(user=request.user).delete()
+            
+            AuditLog.objects.create(
+                user=request.user,
+                action='2fa_disabled',
+                details=f'2FA disabled from {request.META.get("REMOTE_ADDR")}',
+                ip_address=request.META.get('REMOTE_ADDR')
+            )
+        
+        return redirect('dashboard')
+    
+class RoleManagementView(LoginRequiredMixin, View):
+    template_name = 'admin/role_management.html'
+    
+    @require_permission('manage_roles')
+    def get(self, request):
+        roles = Role.objects.all()
+        return render(request, self.template_name, {
+            'roles': roles,
+            'available_permissions': Role.AVAILABLE_PERMISSIONS
+        })
+    
+    @require_permission('manage_roles')
+    def post(self, request):
+        action = request.POST.get('action')
+        
+        if action == 'create':
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            permissions = request.POST.getlist('permissions')
+            
+            Role.objects.create(
+                name=name,
+                description=description,
+                permissions={p: True for p in permissions}
+            )
+            
+        elif action == 'delete':
+            role_id = request.POST.get('role_id')
+            Role.objects.filter(id=role_id).delete()
+        
+        return redirect('role-management')

@@ -1,0 +1,70 @@
+<div class="container">
+  <h2>Two-Factor Authentication Management</h2>
+
+  {% if two_factor_enabled %}
+  <div class="alert alert-success">
+    2FA is currently enabled for your account
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="disable" />
+    <button type="submit" class="btn btn-danger">Disable 2FA</button>
+  </form>
+  {% else %}
+  <div class="alert alert-warning">2FA is not enabled for your account</div>
+  <a href="{% url '2fa-setup' %}" class="btn btn-primary">Enable 2FA</a>
+  {% endif %}
+</div>
+<style>
+  .container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+
+  .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    width: 100%;
+  }
+
+  .btn-primary {
+    background: #007bff;
+    color: white;
+  }
+
+  .btn-danger {
+    background: #dc3545;
+    color: white;
+  }
+
+  .btn:hover {
+    opacity: 0.9;
+  }
+</style>
