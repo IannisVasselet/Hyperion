@@ -27,7 +27,7 @@ class ProcessConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_processes()
-            await asyncio.sleep(120)  # Mise à jour toutes les secondes
+            await asyncio.sleep(1)  # Mise à jour toutes les secondes
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -63,7 +63,7 @@ class ServiceConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_services()
-            await asyncio.sleep(120)  # Update every second
+            await asyncio.sleep(1)  # Update every second
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -162,7 +162,7 @@ class CPUConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_cpu_data()
-            await asyncio.sleep(120)  # Update every second
+            await asyncio.sleep(1)  # Update every second
 
     async def send_cpu_data(self):
         cpu_data = await self.get_cpu_data()
@@ -195,7 +195,7 @@ class MemoryConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_memory_data()
-            await asyncio.sleep(120)  # Update every second
+            await asyncio.sleep(1)  # Update every second
 
     async def send_memory_data(self):
         memory_data = await self.get_memory_data()
@@ -300,10 +300,9 @@ class ShellConsumer(AsyncWebsocketConsumer):
             stdout=subprocess.PIPE, 
             stderr=subprocess.PIPE, 
             text=True,
-            bufsize=1  # Line buffered
+            bufsize=1
         )
         
-        # Start thread to continuously read stdout
         self.stdout_thread = threading.Thread(
             target=self.read_output, 
             daemon=True
@@ -365,7 +364,7 @@ class StorageConsumer(AsyncWebsocketConsumer):
                 'type': 'storage_info',
                 'data': data
             }))
-            await asyncio.sleep(130)  # Update every 30 seconds
+            await asyncio.sleep(30)  # Update every 30 seconds
 
 class TemperatureConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -387,4 +386,4 @@ class TemperatureConsumer(AsyncWebsocketConsumer):
                 'type': 'temperature_info',
                 'data': data
             }))
-            await asyncio.sleep(150)  # Update every 5 seconds
+            await asyncio.sleep(5)  # Update every 5 seconds
