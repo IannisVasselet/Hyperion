@@ -61,6 +61,7 @@ class Role(models.Model):
         'manage_network': 'Manage network settings',
         'manage_roles': 'Manage user roles',
         'manage_users': 'Manage users',
+        'use_shell': 'Use shell commands',
         'view_analytics': 'View system analytics'
     }
 
@@ -129,3 +130,16 @@ class StorageUsage(models.Model):
     percent_used = models.FloatField()  # Percentage used
     fs_type = models.CharField(max_length=50)  # ext4, ntfs, etc.
     recorded_at = models.DateTimeField(auto_now_add=True)
+    
+class SimulationEnvironment(models.Model):
+    name = models.CharField(max_length=100)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='idle')  # idle, running, completed
+    config = models.JSONField(default=dict)  # Store simulation configuration
+
+class SimulationResult(models.Model):
+    environment = models.ForeignKey(SimulationEnvironment, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    metrics = models.JSONField()  # Store simulation results
+    type = models.CharField(max_length=50)  # cpu_load, memory_stress, disk_io, etc.

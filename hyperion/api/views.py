@@ -254,6 +254,7 @@ class TwoFactorVerifyView(View):
     def post(self, request):
         token = request.POST.get('token')
         user_id = request.session.get('pre_2fa_user_id')
+        
         try:
             user = User.objects.get(id=user_id)
             device = TOTPDevice.objects.get(user=user)
@@ -276,6 +277,7 @@ class TwoFactorVerifyView(View):
                 ip_address=request.META.get('REMOTE_ADDR')
             )
             return render(request, 'registration/2fa_verify.html', {'error': 'Invalid token'})
+            
         except (User.DoesNotExist, TOTPDevice.DoesNotExist):
             return redirect('login')
         
@@ -294,12 +296,15 @@ class TwoFactorManageView(LoginRequiredMixin, View):
         profile, created = UserProfile.objects.get_or_create(user=request.user)
         
         if action == 'disable':
+            # Disable 2FA
             profile.two_factor_enabled = False
             profile.two_factor_secret = ''
             profile.save()
             
+            # Delete TOTP device
             TOTPDevice.objects.filter(user=request.user).delete()
             
+            # Log the action
             AuditLog.objects.create(
                 user=request.user,
                 action='2fa_disabled',
@@ -329,14 +334,28 @@ class RoleManagementView(LoginRequiredMixin, View):
             description = request.POST.get('description')
             permissions = request.POST.getlist('permissions')
             
-            Role.objects.create(
+            role = Role.objects.create(
                 name=name,
                 description=description,
                 permissions={p: True for p in permissions}
             )
             
+            AuditLog.objects.create(
+                user=request.user,
+                action='role_created',
+                details=f'Role {name} created'
+            )
+            
         elif action == 'delete':
             role_id = request.POST.get('role_id')
-            Role.objects.filter(id=role_id).delete()
-        
+            role = Role.objects.get(id=role_id)
+            role_name = role.name
+            role.delete()
+            
+            AuditLog.objects.create(
+                user=request.user,
+                action='role_deleted',
+                details=f'Role {role_name} deleted'
+            )
+            
         return redirect('role-management')

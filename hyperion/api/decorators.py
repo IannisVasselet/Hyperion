@@ -1,6 +1,7 @@
 # api/decorators.py
 from functools import wraps
 from django.core.exceptions import PermissionDenied
+from .models import AuditLog, UserProfile
 
 def require_permission(permission):
     def decorator(view_func):
@@ -9,10 +10,33 @@ def require_permission(permission):
             if not request.user.is_authenticated:
                 raise PermissionDenied
             
-            user_profile = request.user.userprofile
-            if not user_profile.role or permission not in user_profile.role.permissions:
+            try:
+                profile = request.user.userprofile
+                if not profile.role:
+                    AuditLog.objects.create(
+                        user=request.user,
+                        action='permission_denied',
+                        details=f'No role assigned'
+                    )
+                    raise PermissionDenied
+                    
+                if not profile.role.has_permission(permission):
+                    AuditLog.objects.create(
+                        user=request.user,
+                        action='permission_denied',
+                        details=f'Access denied to {permission}'
+                    )
+                    raise PermissionDenied
+                
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='permission_granted',
+                    details=f'Access granted to {permission}'
+                )
+                    
+                return view_func(request, *args, **kwargs)
+            except UserProfile.DoesNotExist:
                 raise PermissionDenied
                 
-            return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator

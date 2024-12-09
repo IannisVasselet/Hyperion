@@ -3,7 +3,7 @@ from django.urls import path
 from .consumers import (
     ProcessConsumer, ServiceConsumer, NetworkConsumer,
     CPUConsumer, MemoryConsumer, FileSystemConsumer,
-    ShellConsumer, StorageConsumer, TemperatureConsumer
+    ShellConsumer, StorageConsumer, TemperatureConsumer,
     )
 
 websocket_urlpatterns = [
