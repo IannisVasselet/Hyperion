@@ -657,6 +657,21 @@
         background: #1e1e1e;
         border-radius: 4px;
       }
+      .draggable {
+        cursor: move;
+      }
+
+      .drag-over {
+        background-color: rgba(75, 192, 192, 0.2);
+      }
+
+      .dark-mode .drag-over {
+        background-color: rgba(75, 192, 192, 0.1);
+      }
+
+      .file-table tr.dragging {
+        opacity: 0.5;
+      }
 
       @media (max-width: 768px) {
         .nav-menu {
@@ -1195,6 +1210,8 @@
     </button>
 
     <script>
+        let cpuChart, memoryChart, networkChart, fileSocket;
+
           document.addEventListener('DOMContentLoaded', function () {
               const navLinks = document.querySelectorAll('.nav-menu a');
 
@@ -1206,8 +1223,18 @@
                       this.classList.add('active');
                   });
               });
+
+              fileSocket = new WebSocket(
+                  "ws://" + window.location.host + "/ws/files/"
+              );
+
+              fileSocket.onmessage = function(e) {
+                  const data = JSON.parse(e.data);
+                  if (data.type === 'file_list') {
+                      updateFileTable(data.data);
+                  }
+              };
           });
-          let cpuChart, memoryChart, networkChart;
 
           const cpuData = JSON.parse(
               document.getElementById("cpu-data").textContent
@@ -1575,28 +1602,6 @@
               }
           };
 
-          // File management WebSocket connection
-          const fileSocket = new WebSocket(
-              "ws://" + window.location.host + "/ws/files/"
-          );
-
-          fileSocket.onmessage = function (e) {
-              const data = JSON.parse(e.data);
-              if (data.type === 'file_list') {
-                  updateFileTable(data.data);
-                  // Update file operations output instead of shell output
-                  const output = document.getElementById('fileOperationsOutput');
-                  const commandLine = document.createElement('div');
-                  commandLine.className = 'shell-line';
-                  commandLine.innerHTML = `
-                        <span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span>
-                        <span class="shell-prompt">$</span>
-                        <span class="shell-command">ls -la ${document.getElementById('currentPath').value}</span>
-                    `;
-                  output.appendChild(commandLine);
-              }
-          };
-
           function openDirectory(path) {
               // Send cd command via WebSocket
               fileSocket.send(JSON.stringify({
@@ -1625,44 +1630,44 @@
           }
 
           function updateFileTable(files) {
-              const tbody = document.getElementById("fileTableBody");
-              const scrollPosition = tbody.parentElement.scrollTop;
+            const tbody = document.getElementById("fileTableBody");
+            if (!tbody) {
+                console.error("fileTableBody element not found");
+                return;
+            }
 
-              tbody.innerHTML = "";
+            const scrollPosition = tbody.parentElement.scrollTop;
+            tbody.innerHTML = "";
 
-              files.forEach(file => {
-                  const row = document.createElement("tr");
-                  row.draggable = true;
-                  row.ondragstart = handleDragStart;
-                  row.innerHTML = `
-                      <td>${file.name}</td>
-                      <td>${file.type}</td>
-                      <td>${formatSize(file.size)}</td>
-                      <td>${new Date(file.modified_at).toLocaleString()}</td>
-                      <td>${file.permissions}</td>
-                      <td>
-                          ${file.type === 'directory' ?
-                      `<button onclick="openDirectory('${file.path}')" class="open-btn">Open</button>` :
-                      ''
-                  }
-                          <button onclick="deleteFile('${file.path}')" class="delete-btn">Delete</button>
-                      </td>
-                  `;
-                  tbody.appendChild(row);
-              });
+            files.forEach(file => {
+                const row = document.createElement("tr");
+                row.draggable = true;
+                row.classList.add('draggable');
 
-              // Update file operations output for shell debuging
-              /*const output = document.getElementById('fileOperationsOutput');
-              const commandLine = document.createElement('div');
-              commandLine.className = 'shell-line';
-              commandLine.innerHTML = `
-                  <span class="shell-timestamp">[${new Date().toLocaleTimeString()}]</span>
-                  <span class="shell-prompt">$</span>
-                  <span class="shell-command">ls -la ${document.getElementById('currentPath').value}</span>
-              `;
-              output.appendChild(commandLine);
-              output.scrollTop = output.scrollHeight;*/
-          }
+                // Événements de glisser-déposer
+                row.addEventListener('dragstart', handleDragStart);
+                row.addEventListener('dragend', handleDragEnd);
+
+                row.innerHTML = `
+                    <td>${file.name}</td>
+                    <td>${file.type}</td>
+                    <td>${formatSize(file.size)}</td>
+                    <td>${new Date(file.modified_at).toLocaleString()}</td>
+                    <td>${file.permissions}</td>
+                    <td>
+                        ${file.type === 'directory' ?
+                            `<button onclick="openDirectory('${file.path}')" class="open-btn">Open</button>` :
+                            ''
+                        }
+                        <button onclick="deleteFile('${file.path}')" class="delete-btn">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Restore scroll position
+            tbody.parentElement.scrollTop = scrollPosition;
+        }
 
           function navigateUp() {
               const currentPath = document.getElementById('currentPath').value;
@@ -1708,25 +1713,52 @@
 
           // Drag and drop handlers
           function handleDragStart(e) {
-              e.dataTransfer.setData('text/plain', e.target.closest('tr').cells[0].textContent);
+            e.target.closest('tr').classList.add('dragging');
+            const row = e.target.closest('tr');
+            const fileData = {
+                name: row.cells[0].textContent,
+                path: row.cells[0].textContent,
+                type: row.cells[1].textContent
+            };
+            e.dataTransfer.setData('application/json', JSON.stringify(fileData));
           }
 
-          function handleDrop(e) {
-              e.preventDefault();
-              const source = e.dataTransfer.getData('text/plain');
-              const destination = document.getElementById('currentPath').value;
-
-              fileSocket.send(JSON.stringify({
-                  action: 'move',
-                  source: source,
-                  destination: destination
-              }));
+          // Ajouter cette fonction manquante
+          function handleDragEnd(e) {
+            e.target.closest('tr').classList.remove('dragging');
           }
 
           function handleDragOver(e) {
-              e.preventDefault();
+            e.preventDefault();
+            const dragZone = e.currentTarget;
+            dragZone.classList.add('drag-over');
           }
 
+          function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+          }
+
+          function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            try {
+                const data = JSON.parse(e.dataTransfer.getData('application/json'));
+                const destinationPath = document.getElementById('currentPath').value;
+                const sourcePath = data.path;
+
+                const destinationFullPath = destinationPath === '/' ?
+                    `/${sourcePath}` :
+                    `${destinationPath}/${sourcePath}`;
+
+                fileSocket.send(JSON.stringify({
+                    action: 'move',
+                    source: sourcePath,
+                    destination: destinationFullPath
+                }));
+            } catch (error) {
+                console.error('Erreur lors du drop:', error);
+            }
+          }
           // Shell WebSocket connection
           const shellSocket = new WebSocket(
               "ws://" + window.location.host + "/ws/shell/"

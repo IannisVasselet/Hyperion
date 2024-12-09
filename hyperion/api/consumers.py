@@ -1,6 +1,9 @@
 # hyperion/api/consumers.py
 import asyncio
 import json
+import shutil
+import subprocess
+import threading
 
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -11,7 +14,6 @@ from .utils import (
     get_processes, get_services, stop_process, start_service, stop_service, restart_service,
     block_ip, unblock_ip, block_port, list_directory, get_storage_info, get_system_temperatures,
 )
-
 
 class ProcessConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -25,7 +27,7 @@ class ProcessConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_processes()
-            await asyncio.sleep(1)  # Mise à jour toutes les secondes
+            await asyncio.sleep(120)  # Mise à jour toutes les secondes
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -61,7 +63,7 @@ class ServiceConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_services()
-            await asyncio.sleep(1)  # Update every second
+            await asyncio.sleep(120)  # Update every second
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -160,7 +162,7 @@ class CPUConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_cpu_data()
-            await asyncio.sleep(1)  # Update every second
+            await asyncio.sleep(120)  # Update every second
 
     async def send_cpu_data(self):
         cpu_data = await self.get_cpu_data()
@@ -193,7 +195,7 @@ class MemoryConsumer(AsyncWebsocketConsumer):
     async def send_periodic_updates(self):
         while self.is_connected:
             await self.send_memory_data()
-            await asyncio.sleep(1)  # Update every second
+            await asyncio.sleep(120)  # Update every second
 
     async def send_memory_data(self):
         memory_data = await self.get_memory_data()
@@ -265,62 +267,84 @@ class FileSystemConsumer(AsyncWebsocketConsumer):
             path = data.get('path')
             output = await self.execute_command(f"rm -rf {path}")
             await self.send_file_list(self.current_path)
-
+        
+        elif action == 'move':
+            source = data.get('source')
+            destination = data.get('destination')
+            success = await self.move_file(source, destination)
+            if success:
+                await self.send_file_list(self.current_path)
+    
+    @sync_to_async
+    def move_file(self, source, destination):
+        try:
+            shutil.move(source, destination)
+            return True
+        except Exception as e:
+            return False
 
 class ShellConsumer(AsyncWebsocketConsumer):
+    shell_process = None
+    stdout_thread = None
+    current_line = ""
+
     async def connect(self):
         await self.accept()
-        self.shell = await asyncio.create_subprocess_shell(
-            '/bin/bash',
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
+        await self.start_shell()
 
-    async def disconnect(self, close_code):
-        if hasattr(self, 'shell'):
-            self.shell.terminate()
-            await self.shell.wait()
+    async def start_shell(self):
+        # Start an interactive bash shell
+        self.shell_process = subprocess.Popen(
+            ['/bin/bash'], 
+            stdin=subprocess.PIPE, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            text=True,
+            bufsize=1  # Line buffered
+        )
+        
+        # Start thread to continuously read stdout
+        self.stdout_thread = threading.Thread(
+            target=self.read_output, 
+            daemon=True
+        )
+        self.stdout_thread.start()
+
+    def read_output(self):
+        while self.shell_process:
+            char = self.shell_process.stdout.read(1)
+            if not char:
+                break
+            
+            self.current_line += char
+            
+            if char == '\n':
+                # Send complete line
+                if self.current_line.strip():
+                    asyncio.run(self.send_shell_output(self.current_line.strip()))
+                self.current_line = ""
+
+    async def send_shell_output(self, output):
+        await self.send(text_data=json.dumps({
+            'type': 'shell_output',
+            'output': output
+        }))
 
     async def receive(self, text_data):
+        # Parse incoming command
         data = json.loads(text_data)
-        command = data.get('command')
+        command = data.get('command', '')
+        
         if command:
-            try:
-                # Write command to stdin
-                self.shell.stdin.write(f"{command}\n".encode())
-                await self.shell.stdin.drain()
+            # Write command to shell's stdin
+            self.shell_process.stdin.write(command + '\n')
+            self.shell_process.stdin.flush()
 
-                # Execute command and get complete output
-                stdout, stderr = await self.shell.communicate(input=None)
-                output = []
-
-                if stdout:
-                    output.extend(stdout.decode().splitlines())
-                if stderr:
-                    output.extend(stderr.decode().splitlines())
-
-                # Recreate shell process for next command
-                self.shell = await asyncio.create_subprocess_shell(
-                    '/bin/bash',
-                    stdin=asyncio.subprocess.PIPE,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE
-                )
-
-                # Send combined output
-                await self.send(text_data=json.dumps({
-                    'type': 'shell_output',
-                    'output': '\n'.join(output)
-                }))
-
-            except Exception as e:
-                await self.send(text_data=json.dumps({
-                    'type': 'shell_output',
-                    'output': f"Error: {str(e)}"
-                }))
-
-
+    async def disconnect(self, close_code):
+        # Clean up shell process
+        if self.shell_process:
+            self.shell_process.terminate()
+            self.shell_process = None
 class StorageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -341,7 +365,7 @@ class StorageConsumer(AsyncWebsocketConsumer):
                 'type': 'storage_info',
                 'data': data
             }))
-            await asyncio.sleep(30)  # Update every 30 seconds
+            await asyncio.sleep(130)  # Update every 30 seconds
 
 class TemperatureConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -363,4 +387,4 @@ class TemperatureConsumer(AsyncWebsocketConsumer):
                 'type': 'temperature_info',
                 'data': data
             }))
-            await asyncio.sleep(5)  # Update every 5 seconds
+            await asyncio.sleep(150)  # Update every 5 seconds

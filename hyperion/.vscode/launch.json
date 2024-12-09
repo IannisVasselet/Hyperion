@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/env/bin/daphne",
+            "console": "integratedTerminal",
+            "args": [
+                "-b", "127.0.0.1",
+                "-p", "8000",
+                "hyperion.asgi:application"
+            ]
+        }
+    ]
+}
