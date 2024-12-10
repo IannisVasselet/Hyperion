@@ -1,3 +1,6 @@
+{% extends "navbar.html" %}
+{% block title %}SSH Terminal{% endblock %}
+
 {% block content %}
 <div class="ssh-terminal">
   <div class="connection-form" id="connectionForm">
@@ -7,16 +10,94 @@
     <button onclick="connectSSH()">Connect</button>
   </div>
 
-  <div id="terminal" class="terminal-output"></div>
-
-  <div class="command-form" id="commandForm" style="display: none">
-    <input type="text" id="command" placeholder="Enter command..." />
-    <button onclick="sendCommand()">Send</button>
+  <div class="terminal" id="terminal">
+    <div class="terminal-content" id="terminal-content"></div>
+    <div class="terminal-input-line" id="terminal-input-line" style="display: none">
+      <span class="prompt" id="prompt"></span>
+      <input type="text" id="command" class="terminal-input" autofocus />
+    </div>
   </div>
 </div>
 
+<style>
+  .ssh-terminal {
+    width: 800px;
+    margin: 20px auto;
+  }
+
+  .terminal {
+    background: #1e1e1e;
+    color: #fff;
+    padding: 10px;
+    font-family: "Courier New", monospace;
+    height: 400px;
+    border-radius: 5px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  .terminal-content {
+    margin-bottom: 10px;
+  }
+
+  .terminal-input-line {
+    display: flex;
+    align-items: center;
+  }
+
+  .prompt {
+    color: #00ff00;
+    margin-right: 8px;
+  }
+
+  .terminal-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: "Courier New", monospace;
+    font-size: inherit;
+    flex: 1;
+    outline: none;
+  }
+
+  /* Coloration syntaxique */
+  .shell-error {
+    color: #ff5555;
+  }
+
+  .shell-success {
+    color: #50fa7b;
+  }
+
+  .shell-warning {
+    color: #ffb86c;
+  }
+
+  .shell-permission {
+    color: #8be9fd;
+  }
+
+  .shell-directory {
+    color: #bd93f9;
+    font-weight: bold;
+  }
+
+  .shell-file {
+    color: #f8f8f2;
+  }
+
+  .shell-symlink {
+    color: #ff79c6;
+  }
+
+  .shell-executable {
+    color: #50fa7b;
+  }
+</style>
+
 <script>
   let ws = null;
+  let currentPath = "~";
 
   function connectSSH() {
     ws = new WebSocket(`ws://${window.location.host}/ws/ssh/`);
@@ -37,68 +118,81 @@
 
       if (data.type === "connection_established") {
         document.getElementById("connectionForm").style.display = "none";
-        document.getElementById("commandForm").style.display = "block";
+        document.getElementById("terminal-input-line").style.display = "flex";
+        updatePrompt();
+        document.getElementById("command").focus();
         appendToTerminal("Connection established");
       } else if (data.type === "command_output") {
         appendToTerminal(data.output);
+        updatePrompt();
       } else if (data.type === "error") {
         appendToTerminal("Error: " + data.message);
       }
     };
-
-    ws.onclose = () => {
-      appendToTerminal("Connection closed");
-    };
   }
 
-  function sendCommand() {
-    if (!ws) {
-      appendToTerminal("Error: Not connected");
-      return;
-    }
+  function updatePrompt() {
+    const username = document.getElementById("username").value;
+    const hostname = document.getElementById("hostname").value;
+    document.getElementById("prompt").textContent = `${username}@${hostname}:${currentPath}$ `;
+  }
 
-    const command = document.getElementById("command").value;
-
-    ws.send(
-      JSON.stringify({
-        type: "shell_command", // Ajout du type
-        command: command,
-      })
-    );
-
-    document.getElementById("command").value = "";
+  function formatOutput(text) {
+    // Formater la sortie avec coloration syntaxique
+    const lines = text.split('\n');
+    return lines.map(line => {
+      // Erreurs
+      if (line.match(/^(error|Error|ERROR|Failed|FAILED|fatal|FATAL):/i)) {
+        return `<span class="shell-error">${line}</span>`;
+      }
+      // Permissions et listing de fichiers (ls -l)
+      else if (line.match(/^[d-][rwx-]{9}/)) {
+        return line
+          .replace(/^([d-][rwx-]{9})\s+(\d+)\s+(\w+)\s+(\w+)\s+(\d+)\s+([A-Za-z]+\s+\d+\s+[\d:]+)\s+(.+)$/,
+            (match, perm, links, owner, group, size, date, name) => {
+              const isDir = perm.startsWith('d');
+              const isLink = name.includes('->');
+              const isExec = perm.includes('x');
+              
+              return `<span class="shell-permission">${perm}</span> ${links} ${owner} ${group} ${size} ${date} ` +
+                     `<span class="${isDir ? 'shell-directory' : isLink ? 'shell-symlink' : isExec ? 'shell-executable' : 'shell-file'}">${name}</span>`;
+            });
+      }
+      // Succès
+      else if (line.match(/^(success|SUCCESS|OK|done|DONE):/i)) {
+        return `<span class="shell-success">${line}</span>`;
+      }
+      // Avertissements
+      else if (line.match(/^(warning|WARNING|warn|WARN):/i)) {
+        return `<span class="shell-warning">${line}</span>`;
+      }
+      // Séquences d'échappement ANSI
+      else {
+        return line.replace(/\x1b\[[0-9;]*m/g, '');
+      }
+    }).join('\n');
   }
 
   function appendToTerminal(text) {
-    const terminal = document.getElementById("terminal");
-    const pre = document.createElement("pre");
-    pre.textContent = text;
-    terminal.appendChild(pre);
+    const terminal = document.getElementById("terminal-content");
+    const formattedText = formatOutput(text);
+    terminal.innerHTML += `${formattedText}\n`;
     terminal.scrollTop = terminal.scrollHeight;
   }
+
+  // Gérer l'envoi de commande avec la touche Enter
+  document.getElementById("command").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      const command = this.value;
+      if (command) {
+        ws.send(JSON.stringify({
+          type: "shell_command",
+          command: command
+        }));
+        appendToTerminal(`${document.getElementById("prompt").textContent}${command}`);
+        this.value = "";
+      }
+    }
+  });
 </script>
-
-<style>
-  .ssh-terminal {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-  }
-
-  .terminal-output {
-    background: #000;
-    color: #33ff33;
-    padding: 10px;
-    font-family: monospace;
-    height: 400px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
-
-  input,
-  button {
-    margin: 5px;
-    padding: 5px;
-  }
-</style>
 {% endblock %}
