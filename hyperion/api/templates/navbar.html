@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
+    {% block head %}{% endblock %}
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
   </head>
   <body>
-    {%block content%}
-
     <nav class="nav-menu">
       <h2>Hyperion</h2>
       <ul>
@@ -22,31 +22,31 @@
           </a>
         </li>
         <li>
-          <a href="#processes">
+          <a href="{% url 'dashboard' %}#monitoring">
             <i class="fas fa-microchip"></i>
             Processes
           </a>
         </li>
         <li>
-          <a href="#services">
+          <a href="{% url 'dashboard' %}#services">
             <i class="fas fa-cogs"></i>
             Services
           </a>
         </li>
         <li>
-          <a href="#files">
+          <a href="{% url 'dashboard' %}#files">
             <i class="fas fa-folder"></i>
             File Management
           </a>
         </li>
         <li>
-          <a href="#network">
+          <a href="{% url 'dashboard' %}#network">
             <i class="fas fa-network-wired"></i>
             Network
           </a>
         </li>
         <li>
-          <a href="#shell">
+          <a href="{% url 'dashboard' %}#shell">
             <i class="fas fa-terminal"></i>
             Shell
           </a>
@@ -83,7 +83,7 @@
         </li>
       </ul>
     </nav>
-    {%endblock%}
+    {% block content %}{% endblock %}
   </body>
   <style>
     body {
