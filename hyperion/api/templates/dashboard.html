@@ -25,10 +25,11 @@
           <input
             type="text"
             id="processFilter"
+            name="process_filter"
             placeholder="Filter processes..."
             onkeyup="filterProcesses()"
           />
-          <select id="processSorting" onchange="sortProcesses()">
+          <select id="processSorting" onchange="sortProcesses()" id="processSorting" name="process_sorting" >
             <option value="cpu">Sort by CPU</option>
             <option value="memory">Sort by Memory</option>
             <option value="name">Sort by Name</option>
@@ -71,7 +72,7 @@
       <div class="charts-container">
         <div class="widget">
           <div class="chart-controls">
-            <select id="chartSelector" onchange="switchChart()">
+            <select id="chartSelector" onchange="switchChart()" id="chartSelector" name="chart_selector">
               <option value="cpu">CPU Usage</option>
               <option value="memory">Memory Usage</option>
               <option value="network">Network Usage</option>
@@ -137,7 +138,7 @@
           <!-- Port Management -->
           <div class="control-group port-blocking">
             <input type="number" id="portNumber" placeholder="Port (1-65535)" />
-            <select id="protocol">
+            <select id="protocol" name="protocol">
               <option value="tcp">TCP</option>
               <option value="udp">UDP</option>
             </select>
@@ -153,7 +154,7 @@
 
           <!-- Interface Configuration -->
           <div class="control-group interface-config">
-            <select id="networkInterface">
+            <select id="networkInterface" name="network_interface">
               <option value="">Select Interface</option>
             </select>
             <input type="text" id="ipConfig" placeholder="IP Configuration" />
@@ -359,7 +360,7 @@
                                   <td>${process.memory_percent?.toFixed(1) || 0}%</td>
                                   <td>
                                       <button class="process-action stop-btn" onclick="stopProcess(${process.pid})">Stop</button>
-                                      <select class="process-action priority-select" onchange="changePriority(${process.pid}, this.value)">
+                                      <select class="process-action priority-select" onchange="changePriority(${process.pid}, this.value)" id="priority-${process.pid}" name="priority">
                                           <option value="-20">Highest</option>
                                           <option value="0">Normal</option>
                                           <option value="19">Lowest</option>

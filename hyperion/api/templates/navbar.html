@@ -148,7 +148,7 @@
     }
 
     .main-content {
-      margin-left: 250px;
+      margin-left: 230px;
       padding: 20px;
       margin-top: 60px;
       width: calc(100% - 250px);
@@ -191,6 +191,18 @@
       max-width: 100%;
       margin: 0 0 30px 0;
       box-sizing: border-box;
+    }
+
+    .widget h3 {
+      margin-top: 0;
+    }
+    .ui-tooltip {
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      border-radius: 4px;
+      max-width: 300px;
+      font-size: 12px;
     }
 
     .charts-container {
@@ -376,6 +388,9 @@
     }
 
     /* Widget Processes */
+    #processes {
+      grid-column: 1 / -1;
+    }
     #processes .scrollable-list {
       max-height: 600px;
       width: 100%;
