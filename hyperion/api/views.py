@@ -4,23 +4,37 @@ from django.core.serializers import serialize
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views import View
-from django.views.generic import FormView
+from django.views.generic import FormView, TemplateView
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django import forms
 import json
 
+# OTP imports - fixed StaticDevice import
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 from django_otp.util import random_hex
+
+# QR code generation
 import qrcode
 import qrcode.image.svg
+from io import BytesIO
+
+# Two factor authentication
 from two_factor.forms import TOTPDeviceForm
+from two_factor.utils import get_otpauth_url
+from two_factor.views import SetupView
 
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
 
 from .models import (
     Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage,
@@ -362,3 +376,80 @@ class RoleManagementView(LoginRequiredMixin, View):
     
 def ssh_terminal(request):
     return render(request, 'ssh_terminal.html')
+
+@method_decorator(login_required, name='dispatch')
+class CustomSetupView(SetupView):
+    template_name = 'two_factor/core/setup.html'
+    success_url = 'two_factor:setup_complete'
+    
+@method_decorator(login_required, name='dispatch')
+class TwoFactorQRView(View):
+    def get(self, request, *args, **kwargs):
+        # Get or create TOTP device for user
+        try:
+            device = request.user.totpdevice_set.get()
+        except:
+            return HttpResponse('No TOTP device configured', status=400)
+
+        # Generate OTP auth URL
+        provisioning_uri = get_otpauth_url(
+            accountname=request.user.username,
+            secret=device.key,
+            issuer='Hyperion'
+        )
+
+        # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(provisioning_uri)
+        qr.make(fit=True)
+
+        # Create SVG image
+        img = qr.make_image(image_factory=qrcode.image.svg.SvgImage)
+        stream = BytesIO()
+        img.save(stream)
+        
+        # Return SVG response
+        return HttpResponse(
+            stream.getvalue().decode(),
+            content_type='image/svg+xml'
+        )
+        
+@method_decorator(login_required, name='dispatch')
+class TwoFactorBackupTokensView(TemplateView):
+    template_name = 'two_factor/core/backup_tokens.html'
+
+    def get(self, request, *args, **kwargs):
+        device = self._get_or_create_device(request.user)
+        tokens = [token.token for token in device.token_set.all()]
+        return JsonResponse({
+            'backup_tokens': tokens,
+            'tokens_count': len(tokens)
+        })
+
+    def post(self, request, *args, **kwargs):
+        device = self._get_or_create_device(request.user)
+        device.token_set.all().delete()
+        
+        # Generate new backup tokens
+        tokens = []
+        for _ in range(10):  # Generate 10 backup tokens
+            token = device.generate_token()
+            tokens.append(token.token)
+
+        return JsonResponse({
+            'backup_tokens': tokens,
+            'tokens_count': len(tokens)
+        })
+
+    def _get_or_create_device(self, user):
+        """Get or create a static device for backup tokens"""
+        device, _ = StaticDevice.objects.get_or_create(
+            user=user,
+            name='backup'
+        )
+        return device

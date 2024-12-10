@@ -5,9 +5,10 @@ from .views import (
     ProcessViewSet, ServiceViewSet, NetworkViewSet,
     SlackNotificationView, EmailNotificationView, SSHCommandView,
     dashboard, LoginView, LogoutView, TwoFactorSetupView, TwoFactorVerifyView, TwoFactorManageView,
-    RoleManagementView
+    RoleManagementView, TwoFactorQRView, TwoFactorBackupTokensView
     )
 from . import views
+
 
 router = DefaultRouter()
 router.register(r'processes', ProcessViewSet, basename='process')
@@ -20,12 +21,17 @@ urlpatterns = [
     path('notify/email/', EmailNotificationView.as_view(), name='email-notify'),
     path('ssh/command/', SSHCommandView.as_view(), name='ssh-command'),
     path('dashboard/', dashboard, name='dashboard'),
+    
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),
+    
     path('auth/2fa/setup/', TwoFactorSetupView.as_view(), name='2fa-setup'),
     path('auth/2fa/verify/', TwoFactorVerifyView.as_view(), name='2fa-verify'),
     path('2fa/setup/', TwoFactorSetupView.as_view(), name='2fa-setup'),
-    path('2fa/verify/', TwoFactorVerifyView.as_view(), name='2fa-verify'),
+    path('2fa/verify/', TwoFactorVerifyView.as_view(), name='2fa-verify'), 
+    path('2fa/qr/', TwoFactorQRView.as_view(), name='2fa-qr'),
+    path('2fa/backup-tokens/', TwoFactorBackupTokensView.as_view(), name='2fa-backup-tokens'),
+    
     path('roles/', RoleManagementView.as_view(), name='role-management'),
     path('auth/2fa/manage/', TwoFactorManageView.as_view(), name='2fa-manage'),
     path('ssh/', views.ssh_terminal, name='ssh_terminal'),

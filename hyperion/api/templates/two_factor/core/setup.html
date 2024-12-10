@@ -1,0 +1,11 @@
+# templates/two_factor/core/setup.html
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Configuration de l'authentification à deux facteurs</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Configurer</button>
+</form>
+{% endblock %}

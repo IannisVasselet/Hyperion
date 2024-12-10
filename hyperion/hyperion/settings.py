@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
+    'two_factor',
 ]
 
 MIDDLEWARE = [
@@ -158,6 +159,10 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
+# Configurations 2FA
+TWO_FACTOR_PATCH_ADMIN = True
+TWO_FACTOR_CALL_GATEWAY = None  # Pour les codes par téléphone
+TWO_FACTOR_SMS_GATEWAY = None   # Pour les codes par SMS
 # Two Factor Authentication
 TWO_FACTOR_AUTH = {
     'TOTP_DIGITS': 6,
@@ -166,7 +171,6 @@ TWO_FACTOR_AUTH = {
 }
 
 # Celery settings
-# hyperion/settings.py
 # CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'
