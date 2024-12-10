@@ -93,6 +93,25 @@
   .shell-executable {
     color: #50fa7b;
   }
+
+  .autocomplete-suggestions {
+    position: absolute;
+    background: #1e1e1e;
+    color: #fff;
+    border: 1px solid #555;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+
+  .autocomplete-suggestion {
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  .autocomplete-suggestion:hover {
+    background: #555;
+  }
 </style>
 
 <script>
@@ -100,6 +119,7 @@
   let currentPath = "~";
   let commandHistory = [];
   let historyIndex = -1;
+  const commonCommands = ["ls", "cd", "cat", "echo", "mkdir", "rm", "rmdir", "touch", "nano", "vim", "cp", "mv", "pwd"];
 
   function connectSSH() {
     ws = new WebSocket(`ws://${window.location.host}/ws/ssh/`);
@@ -182,6 +202,28 @@
     terminal.scrollTop = terminal.scrollHeight;
   }
 
+  function showSuggestions(input, suggestions) {
+    const suggestionBox = document.createElement("div");
+    suggestionBox.className = "autocomplete-suggestions";
+    suggestions.forEach(suggestion => {
+      const suggestionItem = document.createElement("div");
+      suggestionItem.className = "autocomplete-suggestion";
+      suggestionItem.textContent = suggestion;
+      suggestionItem.onclick = () => {
+        input.value = suggestion;
+        suggestionBox.remove();
+      };
+      suggestionBox.appendChild(suggestionItem);
+    });
+    input.parentNode.appendChild(suggestionBox);
+  }
+
+  function getSuggestions(input) {
+    const value = input.value;
+    const suggestions = commonCommands.filter(cmd => cmd.startsWith(value));
+    showSuggestions(input, suggestions);
+  }
+
   // Gérer l'envoi de commande avec la touche Enter et l'historique des commandes
   document.getElementById("command").addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
@@ -209,6 +251,9 @@
         historyIndex = commandHistory.length;
         this.value = "";
       }
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      getSuggestions(this);
     }
   });
 </script>
