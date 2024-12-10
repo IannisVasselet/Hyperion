@@ -293,7 +293,6 @@ class ShellConsumer(AsyncWebsocketConsumer):
         await self.start_shell()
 
     async def start_shell(self):
-        # Start an interactive bash shell
         self.shell_process = subprocess.Popen(
             ['/bin/bash'], 
             stdin=subprocess.PIPE, 
@@ -318,7 +317,6 @@ class ShellConsumer(AsyncWebsocketConsumer):
             self.current_line += char
             
             if char == '\n':
-                # Send complete line
                 if self.current_line.strip():
                     asyncio.run(self.send_shell_output(self.current_line.strip()))
                 self.current_line = ""
@@ -330,17 +328,14 @@ class ShellConsumer(AsyncWebsocketConsumer):
         }))
 
     async def receive(self, text_data):
-        # Parse incoming command
         data = json.loads(text_data)
         command = data.get('command', '')
         
         if command:
-            # Write command to shell's stdin
             self.shell_process.stdin.write(command + '\n')
             self.shell_process.stdin.flush()
 
     async def disconnect(self, close_code):
-        # Clean up shell process
         if self.shell_process:
             self.shell_process.terminate()
             self.shell_process = None
