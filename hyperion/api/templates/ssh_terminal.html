@@ -98,6 +98,8 @@
 <script>
   let ws = null;
   let currentPath = "~";
+  let commandHistory = [];
+  let historyIndex = -1;
 
   function connectSSH() {
     ws = new WebSocket(`ws://${window.location.host}/ws/ssh/`);
@@ -180,7 +182,7 @@
     terminal.scrollTop = terminal.scrollHeight;
   }
 
-  // Gérer l'envoi de commande avec la touche Enter
+  // Gérer l'envoi de commande avec la touche Enter et l'historique des commandes
   document.getElementById("command").addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
       const command = this.value;
@@ -190,6 +192,21 @@
           command: command
         }));
         appendToTerminal(`${document.getElementById("prompt").textContent}${command}`);
+        commandHistory.push(command);
+        historyIndex = commandHistory.length;
+        this.value = "";
+      }
+    } else if (e.key === "ArrowUp") {
+      if (historyIndex > 0) {
+        historyIndex--;
+        this.value = commandHistory[historyIndex];
+      }
+    } else if (e.key === "ArrowDown") {
+      if (historyIndex < commandHistory.length - 1) {
+        historyIndex++;
+        this.value = commandHistory[historyIndex];
+      } else {
+        historyIndex = commandHistory.length;
         this.value = "";
       }
     }
