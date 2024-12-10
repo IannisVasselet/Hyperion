@@ -1,9 +1,11 @@
 # api/routing.py
-from django.urls import path
+from django.urls import path, re_path
+from . import consumers
 from .consumers import (
     ProcessConsumer, ServiceConsumer, NetworkConsumer,
     CPUConsumer, MemoryConsumer, FileSystemConsumer,
     ShellConsumer, StorageConsumer, TemperatureConsumer,
+    SSHConsumer
     )
 
 websocket_urlpatterns = [
@@ -16,4 +18,5 @@ websocket_urlpatterns = [
     path('ws/shell/', ShellConsumer.as_asgi()),
     path('ws/storage/', StorageConsumer.as_asgi()),
     path('ws/temperature/', TemperatureConsumer.as_asgi()),
+    re_path(r'ws/ssh/$', consumers.SSHConsumer.as_asgi()),
 ]

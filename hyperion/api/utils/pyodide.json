@@ -1,0 +1,4 @@
+{
+  "packages": ["paramiko"],
+  "micropip": ["paramiko"]
+}

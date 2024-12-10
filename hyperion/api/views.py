@@ -359,3 +359,6 @@ class RoleManagementView(LoginRequiredMixin, View):
             )
             
         return redirect('role-management')
+    
+def ssh_terminal(request):
+    return render(request, 'ssh_terminal.html')

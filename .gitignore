@@ -6,3 +6,6 @@ env
 *.pot
 *.pyc
 __pycache__/
+
+# Fichier static
+/hyperion/staticfiles

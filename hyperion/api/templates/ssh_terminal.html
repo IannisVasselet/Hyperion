@@ -1,0 +1,104 @@
+{% block content %}
+<div class="ssh-terminal">
+  <div class="connection-form" id="connectionForm">
+    <input type="text" id="hostname" placeholder="Hostname" />
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="connectSSH()">Connect</button>
+  </div>
+
+  <div id="terminal" class="terminal-output"></div>
+
+  <div class="command-form" id="commandForm" style="display: none">
+    <input type="text" id="command" placeholder="Enter command..." />
+    <button onclick="sendCommand()">Send</button>
+  </div>
+</div>
+
+<script>
+  let ws = null;
+
+  function connectSSH() {
+    ws = new WebSocket(`ws://${window.location.host}/ws/ssh/`);
+
+    ws.onopen = () => {
+      const data = {
+        command: "connect",
+        type: "connect",
+        hostname: document.getElementById("hostname").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+      };
+      ws.send(JSON.stringify(data));
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === "connection_established") {
+        document.getElementById("connectionForm").style.display = "none";
+        document.getElementById("commandForm").style.display = "block";
+        appendToTerminal("Connection established");
+      } else if (data.type === "command_output") {
+        appendToTerminal(data.output);
+      } else if (data.type === "error") {
+        appendToTerminal("Error: " + data.message);
+      }
+    };
+
+    ws.onclose = () => {
+      appendToTerminal("Connection closed");
+    };
+  }
+
+  function sendCommand() {
+    if (!ws) {
+      appendToTerminal("Error: Not connected");
+      return;
+    }
+
+    const command = document.getElementById("command").value;
+
+    ws.send(
+      JSON.stringify({
+        type: "shell_command", // Ajout du type
+        command: command,
+      })
+    );
+
+    document.getElementById("command").value = "";
+  }
+
+  function appendToTerminal(text) {
+    const terminal = document.getElementById("terminal");
+    const pre = document.createElement("pre");
+    pre.textContent = text;
+    terminal.appendChild(pre);
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+</script>
+
+<style>
+  .ssh-terminal {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+  }
+
+  .terminal-output {
+    background: #000;
+    color: #33ff33;
+    padding: 10px;
+    font-family: monospace;
+    height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  input,
+  button {
+    margin: 5px;
+    padding: 5px;
+  }
+</style>
+{% endblock %}

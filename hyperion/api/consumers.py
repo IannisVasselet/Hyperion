@@ -4,11 +4,11 @@ import json
 import shutil
 import subprocess
 import threading
+import paramiko
 
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.apps import apps
-
 
 from .utils import (
     get_processes, get_services, stop_process, start_service, stop_service, restart_service,
@@ -382,3 +382,77 @@ class TemperatureConsumer(AsyncWebsocketConsumer):
                 'data': data
             }))
             await asyncio.sleep(5)  # Update every 5 seconds
+
+class SSHConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.ssh_client = None
+        self.shell = None
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        command = data.get('command')
+        commandType = data.get('type')
+        
+        if commandType == 'connect':
+            try:
+                self.ssh_client = paramiko.SSHClient()
+                self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                self.ssh_client.connect(
+                    hostname=data['hostname'],
+                    username=data['username'],
+                    password=data['password']
+                )
+                self.shell = self.ssh_client.invoke_shell()
+                await self.send(json.dumps({
+                    'type': 'connection_established'
+                }))
+            except Exception as e:
+                await self.send(json.dumps({
+                    'type': 'error',
+                    'message': str(e)
+                }))
+                
+        elif commandType == 'shell_command':
+            if not self.shell:
+                await self.send(json.dumps({
+                    'type': 'error',
+                    'message': 'Not connected'
+                }))
+                return
+                
+            try:
+                self.shell.send(data['command'] + '\n')
+                # Attendre que la sortie soit prête
+                await asyncio.sleep(0.5)  # Augmenter le délai d'attente
+                
+                output = ''
+                while self.shell.recv_ready():
+                    chunk = self.shell.recv(4096)
+                    try:
+                        output += chunk.decode('utf-8')
+                    except UnicodeDecodeError:
+                        output += chunk.decode('latin-1')
+                
+                if output:
+                    await self.send(json.dumps({
+                        'type': 'command_output',
+                        'output': output
+                    }))
+                else:
+                    await self.send(json.dumps({
+                        'type': 'error',
+                        'message': 'No output received'
+                    }))
+                    
+            except Exception as e:
+                await self.send(json.dumps({
+                    'type': 'error',
+                    'message': str(e)
+                }))
+
+    async def disconnect(self, close_code):
+        if self.shell:
+            self.shell.close()
+        if self.ssh_client:
+            self.ssh_client.close()

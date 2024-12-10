@@ -7,6 +7,7 @@ from .views import (
     dashboard, LoginView, LogoutView, TwoFactorSetupView, TwoFactorVerifyView, TwoFactorManageView,
     RoleManagementView
     )
+from . import views
 
 router = DefaultRouter()
 router.register(r'processes', ProcessViewSet, basename='process')
@@ -27,4 +28,5 @@ urlpatterns = [
     path('2fa/verify/', TwoFactorVerifyView.as_view(), name='2fa-verify'),
     path('roles/', RoleManagementView.as_view(), name='role-management'),
     path('auth/2fa/manage/', TwoFactorManageView.as_view(), name='2fa-manage'),
+    path('ssh/', views.ssh_terminal, name='ssh_terminal'),
 ]
