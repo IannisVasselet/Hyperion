@@ -21,6 +21,13 @@
     <div class="container">
       <div class="widget" id="processes">
         <h3>Processes</h3>
+        <h4>Features:</h4>
+        <ul>
+          <li>Filter processes by name</li>
+          <li>Sort processes by CPU, Memory, Name</li>
+          <li>Display process details (Name, PID, Status, CPU%, Memory%)</li>
+          <li>Process management actions (stop, restart, priority modification)</li>
+          <li>Real-time updates via ProcessConsumer WebSocket</li>
         <div class="controls">
           <input
             type="text"
@@ -54,6 +61,14 @@
       <!-- Services table below -->
       <div class="widget" id="services">
         <h3>Services</h3>
+        <h4>Features:</h4>
+        <ul>
+          <li>Display service details (Name, Status)</li>
+          <li>Service management actions (start, stop, restart)</li>
+          <li>Real-time updates via ServiceConsumer WebSocket</li>
+          <li>Service status indicators</li>
+          <li>Service name listing</li>
+        </ul>
         <div class="scrollable-list">
           <table class="service-table" style="width: 100%; table-layout: fixed">
             <thead>
@@ -71,6 +86,14 @@
       <!-- Charts below -->
       <div class="charts-container">
         <div class="widget">
+          <h3>System Metrics</h3>
+          <h4>Features:</h4>
+          <ul>
+            <li>Real-time CPU, Memory, Network usage charts</li>
+            <li>Switch between CPU, Memory, Network charts</li>
+            <li>Responsive chart design</li>
+            <li>Real-time updates via CPU, Memory, Network consumers</li>
+          </ul>
           <div class="chart-controls">
             <select id="chartSelector" onchange="switchChart()" id="chartSelector" name="chart_selector">
               <option value="cpu">CPU Usage</option>
@@ -107,6 +130,13 @@
       <!-- Storage Widget -->
       <div class="widget" id="storage">
         <h3>Storage Analysis</h3>
+        <h4>Features:</h4>
+        <ul>
+          <li>Display storage details (Mount Point, Device, Filesystem, Usage)</li>
+          <li>Storage usage progress bar</li>
+          <li>Real-time updates via StorageConsumer WebSocket</li>
+          <li>Storage size and usage information</li>
+        </ul>
         <div class="storage-container scrollable-list">
           <div id="storageList"></div>
         </div>
@@ -114,12 +144,28 @@
       <!-- Temperature Widget -->
       <div class="widget" id="temperature">
         <h3>System Temperatures</h3>
+        <h4>Features:</h4>
+        <ul>
+          <li>Display temperature details (Device, Sensor, Current, Max, Critical)</li>
+          <li>Temperature progress bar with warning and critical levels</li>
+          <li>Real-time updates via TemperatureConsumer WebSocket</li>
+          <li>Temperature unit and sensor information</li>
+          <li>WARNING : Some features depends on the os and the hardware</li>
+        </ul>
         <div class="temperature-container scrollable-list">
           <div id="temperatureList"></div>
         </div>
       </div>
       <div class="widget" id="network">
         <h3>Network Security</h3>
+        <h4>Features:</h4>
+        <ul>
+          <li>Block IP addresses</li>
+          <li>Block ports (TCP, UDP)</li>
+          <li>Configure network interfaces</li>
+          <li>Real-time updates via NetworkConsumer WebSocket</li>
+          <li>Interface IP configuration</li>
+        </ul>
         <div class="network-controls">
           <!-- IP Blocking -->
           <div class="control-group ip-blocking">
@@ -176,6 +222,13 @@
       <!-- File Management -->
       <div class="widget" id="files">
         <h3>File Management</h3>
+        <h4>Features:</h4>
+        <ul>
+          <li>File and directory listing</li>
+          <li>File size, type, modified date, permissions</li>
+          <li>File management actions (open directory, delete file)</li>
+          <li>Real-time updates via FileConsumer WebSocket</li>
+        </ul>
         <div class="file-controls">
           <input type="text" id="currentPath" value="/" readonly />
           <button onclick="navigateUp()">Up</button>
@@ -205,6 +258,10 @@
       <!-- Shell -->
       <div class="widget" id="shell">
         <h3>Shell</h3>
+        <h4>Features:</h4>
+        <ul>
+          <li>Real-time shell output</li>
+        </ul>
         <div class="shell-container">
           <div id="shellOutput" class="shell-output"></div>
           <div class="shell-input">
