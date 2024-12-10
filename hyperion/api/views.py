@@ -13,6 +13,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django import forms
 import json
+import psutil
 
 # OTP imports - fixed StaticDevice import
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -33,6 +34,7 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
 
@@ -49,25 +51,53 @@ from .utils import (
 from .tasks import send_slack_notification, send_email_notification
 from .decorators import require_permission
 
+class ProcessSerializer(serializers.Serializer):
+    pid = serializers.IntegerField()
+    name = serializers.CharField()
+    cpu_percent = serializers.FloatField()
+    memory_percent = serializers.FloatField()
+    status = serializers.CharField()
 class ProcessViewSet(viewsets.ViewSet):
-    @require_permission('view_processes')
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [SessionAuthentication]
+    serializer_class = ProcessSerializer
+
+    def get_queryset(self):
+        processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent', 'status']):
+            try:
+                pinfo = proc.as_dict(attrs=['pid', 'name', 'cpu_percent', 'memory_percent', 'status'])
+                processes.append({
+                    'pid': pinfo['pid'],
+                    'name': pinfo['name'],
+                    'cpu_percent': pinfo['cpu_percent'] or 0.0,
+                    'memory_percent': pinfo['memory_percent'] or 0.0,
+                    'status': pinfo['status'] or 'unknown'
+                })
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
+        return processes
+
     def list(self, request):
-        processes = get_processes()
-        return Response(processes)
+        processes = self.get_queryset()
+        serializer = ProcessSerializer(processes, many=True)
+        return Response(serializer.data)
 
-    @require_permission('manage_processes')
-    @action(detail=True, methods=['post'])
-    def stop(self, request, pk=None):
-        if stop_process(int(pk)):
-            return Response({'status': 'process stopped'})
-        return Response({'error': 'process not found'}, status=404)
-
-    @action(detail=True, methods=['post'])
-    def priority(self, request, pk=None):
-        priority = request.data.get('priority')
-        if change_process_priority(int(pk), int(priority)):
-            return Response({'status': 'priority changed'})
-        return Response({'error': 'process not found'}, status=404)
+    def retrieve(self, request, pk=None):
+        try:
+            process = psutil.Process(int(pk))
+            pinfo = process.as_dict(attrs=['pid', 'name', 'cpu_percent', 'memory_percent', 'status'])
+            data = {
+                'pid': pinfo['pid'],
+                'name': pinfo['name'],
+                'cpu_percent': pinfo['cpu_percent'] or 0.0,
+                'memory_percent': pinfo['memory_percent'] or 0.0,
+                'status': pinfo['status'] or 'unknown'
+            }
+            serializer = ProcessSerializer(data)
+            return Response(serializer.data)
+        except psutil.NoSuchProcess:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 class ServiceViewSet(viewsets.ViewSet):
     def list(self, request):
