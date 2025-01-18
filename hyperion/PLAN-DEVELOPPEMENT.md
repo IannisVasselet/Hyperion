@@ -97,65 +97,60 @@ HYPERION.md
 
 ### MISSING AND ALREADY DID !
 
-Based on the project requirements and current implementation, here's what remains to be implemented:
+B# Spécification Technique pour le Projet Hyperion - Plan Mis à Jour
 
-1. **Security Features**:
-- Two-factor authentication (2FA)
-- Role-based access control
-- User management interface
-- IP whitelisting
-- Audit logging
+## État Actuel du Projet
+✅ Infrastructure de base complétée :
+- Architecture Django configurée
+- Celery et Redis opérationnels
+- WebSockets avec Django Channels
+- Docker et Docker Compose
 
-2. **Remote Management**:
-- Multi-server management interface
-- Secure credential storage for SSH
-- Server health monitoring dashboard
-- Server comparison view
-- Remote command execution interface
+## À Compléter
 
-3. **Task Automation**:
-- Task scheduling interface
-- Cron job management UI
-- Automated backup configuration
-- Custom script execution
-- Task templates
+### 1. Backend (60% restant)
+#### 1.1 Endpoints API REST (40%)
+- [✅] Implémenter `/api/system` pour les métriques système
+- [✅] Implémenter `/api/processes` pour la gestion des processus
+- [✅] Implémenter `/api/network` pour la surveillance réseau
+- [✅] Ajouter les sérialiseurs correspondants
 
-4. **Notification System**:
-- Email notification configuration UI
-- Slack integration interface
-- Custom alert thresholds
-- Notification history
-- Alert rules management
+#### 1.2 Modèles de Données (70%)
+- [✅] Compléter les modèles pour les métriques système
+- [✅] Ajouter les modèles pour l'historique
+- [✅] Implémenter les relations entre modèles
 
-5. **Analytics & Reporting**:
-- System performance reports
-- Resource usage trends
-- Custom dashboard creation
-- Export functionality
-- Predictive analysis
+#### 1.3 Tâches Celery (50%)
+- [✅] Ajouter les tâches de collection de métriques
+- [✅] Configurer les tâches périodiques
+- [✅] Implémenter le système de notifications
 
-Currently implemented:
-- Process management via (ProcessConsumer)
+### 2. Frontend (80% restant)
+#### 2.1 Interface Utilisateur
+- [✅] Développer le dashboard principal
+- [✅] Ajouter les graphiques temps réel
+- [ ] Implémenter la gestion des processus
+- [ ] Créer l'interface de configuration
 
+#### 2.2 WebSockets
+- [ ] Finaliser les consumers pour les données temps réel
+- [ ] Ajouter la gestion d'état côté client
+- [ ] Implémenter la reconnexion automatique
 
-- Service management via (ServiceConsumer)
+### 3. Sécurité (90% restant)
+- [ ] Implémenter l'authentification 2FA
+- [ ] Ajouter la gestion des rôles
+- [ ] Sécuriser les endpoints API
+- [ ] Configurer CORS et CSP
 
+### 4. Tests (95% restant)
+- [ ] Écrire les tests unitaires
+- [ ] Ajouter les tests d'intégration
+- [ ] Configurer CI/CD
+- [ ] Tester les performances
 
-- Network monitoring via (NetworkConsumer)
-
-
-- File system management via (FileSystemConsumer)
-
-
-- Shell functionality via (ShellConsumer)
-
-
-- Resource monitoring (CPU, Memory, Network)
-- Real-time updates via WebSocket
-- Basic network security controls
-- Dark/Light theme
-
-To complete the application according to requirements, prioritize implementing:
-1. Security features (especially 2FA)
-2. Notification system
-3. Remote management enhancements
+### 5. Documentation (70% restant)
+- [ ] Compléter la documentation API
+- [ ] Ajouter des exemples d'utilisation
+- [ ] Documenter le déploiement
+- [ ] Créer le guide utilisateur

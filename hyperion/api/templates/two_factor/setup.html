@@ -5,7 +5,9 @@
       Scan this QR code with your authenticator app (like Google Authenticator)
     </p>
 
-    <div class="qr-code">{{ qr_code|safe }}</div>
+    <div class="qr-code">
+      <img src="{% url '2fa-qr' %}" alt="2FA QR Code" />
+    </div>
 
     <form method="post">
       {% csrf_token %}

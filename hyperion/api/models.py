@@ -143,3 +143,19 @@ class SimulationResult(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     metrics = models.JSONField()  # Store simulation results
     type = models.CharField(max_length=50)  # cpu_load, memory_stress, disk_io, etc.
+    
+class TOTPDevice(models.Model):
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='custom_totp_devices'
+    )
+    name = models.CharField(max_length=64, default='default')
+    key = models.CharField(max_length=80)
+    confirmed = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(null=True)
+    
+    class Meta:
+        verbose_name = 'TOTP Device'
+        verbose_name_plural = 'TOTP Devices'

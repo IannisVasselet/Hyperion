@@ -1,7 +1,5 @@
 ### Structure du Projet
 
-Votre projet Hyperion est structuré de la manière suivante :
-
 ```
 hyperion/
 ├── api/
@@ -89,3 +87,4 @@ Terminal 4 : Lancer le serveur Django avec Daphne
 ```bash
 daphne -b 127.0.0.1 -p 8000 hyperion.asgi:application
 ```
+

@@ -1,4 +1,6 @@
 # api/views.py
+import os
+import base64
 from django.shortcuts import render
 from django.core.serializers import serialize
 from django.contrib.auth import authenticate, login, logout
@@ -415,20 +417,24 @@ class CustomSetupView(SetupView):
 @method_decorator(login_required, name='dispatch')
 class TwoFactorQRView(View):
     def get(self, request, *args, **kwargs):
-        # Get or create TOTP device for user
-        try:
-            device = request.user.totpdevice_set.get()
-        except:
-            return HttpResponse('No TOTP device configured', status=400)
-
-        # Generate OTP auth URL
+        # Get or create TOTP device
+        device, created = TOTPDevice.objects.get_or_create(
+            user=request.user,
+            defaults={
+                'name': 'default',
+                'key': random_hex(),
+                'confirmed': False
+            }
+        )
+        
+        # Generate QR code
         provisioning_uri = get_otpauth_url(
             accountname=request.user.username,
             secret=device.key,
-            issuer='Hyperion'
+            issuer="Hyperion"
         )
-
-        # Generate QR code
+        
+        # Create QR code
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -437,16 +443,15 @@ class TwoFactorQRView(View):
         )
         qr.add_data(provisioning_uri)
         qr.make(fit=True)
-
-        # Create SVG image
-        img = qr.make_image(image_factory=qrcode.image.svg.SvgImage)
-        stream = BytesIO()
-        img.save(stream)
         
-        # Return SVG response
+        # Generate image
+        img_buffer = BytesIO()
+        qr.make_image().save(img_buffer, format='PNG')
+        img_buffer.seek(0)
+        
         return HttpResponse(
-            stream.getvalue().decode(),
-            content_type='image/svg+xml'
+            img_buffer.getvalue(),
+            content_type='image/png'
         )
         
 @method_decorator(login_required, name='dispatch')
