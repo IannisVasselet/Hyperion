@@ -18,5 +18,5 @@ websocket_urlpatterns = [
     path('ws/shell/', ShellConsumer.as_asgi()),
     path('ws/storage/', StorageConsumer.as_asgi()),
     path('ws/temperature/', TemperatureConsumer.as_asgi()),
-    re_path(r'ws/ssh/$', consumers.SSHConsumer.as_asgi()),
+    re_path('ws/ssh/$', consumers.SSHConsumer.as_asgi()),
 ]
