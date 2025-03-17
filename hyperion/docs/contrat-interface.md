@@ -38,6 +38,47 @@ Réponse: [{
 }]
 ```
 
+### Authentification
+```http
+POST /api/auth/login/
+Description: Authentification utilisateur (interface web)
+Corps de requête: {
+    "username": string,
+    "password": string
+}
+Réponse: Redirection vers le dashboard ou la page de vérification 2FA
+
+POST /api/auth/api-login/
+Description: Authentification API (renvoie JSON au lieu d'une redirection)
+Corps de requête: {
+    "username": string,
+    "password": string
+}
+Réponse: {
+    "status": "success",
+    "token": string,
+    "user_id": integer,
+    "username": string
+}
+En cas d'erreur: {
+    "status": "error",
+    "message": string
+}
+
+POST /api/auth/2fa/verify/
+Description: Vérification de l'authentification à deux facteurs
+Corps de requête: {
+    "token": string,
+    "code": string
+}
+Réponse: {
+    "success": true,
+    "data": {
+        "access_token": string
+    }
+}
+```
+
 ## 2. WebSocket Endpoints
 
 ### Métriques en Temps Réel
