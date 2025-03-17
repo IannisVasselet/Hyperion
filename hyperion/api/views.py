@@ -13,6 +13,7 @@ from django.views.generic import FormView, TemplateView
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django import forms
 import json
 import psutil
@@ -32,13 +33,14 @@ from two_factor.forms import TOTPDeviceForm
 from two_factor.utils import get_otpauth_url
 from two_factor.views import SetupView
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions, authentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.authtoken.models import Token
 
 from .models import (
     Process, Service, Network, CPUUsage, MemoryUsage, NetworkUsage,
@@ -52,6 +54,48 @@ from .utils import (
     )
 from .tasks import send_slack_notification, send_email_notification
 from .decorators import require_permission
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginAPIView(APIView):
+    # Désactive explicitement l'authentification pour cette vue
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        # Extraire directement du JSON
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        # Déboguer les données reçues
+        print(f"Received login attempt for user: {username}")
+        
+        user = authenticate(username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            
+            # Créer ou récupérer un token
+            token, _ = Token.objects.get_or_create(user=user)
+            
+            # Journaliser la connexion
+            AuditLog.objects.create(
+                user=user,
+                action='api_login',
+                details=f'API Login from {request.META.get("REMOTE_ADDR")}',
+                ip_address=request.META.get('REMOTE_ADDR')
+            )
+            
+            return Response({
+                'status': 'success',
+                'token': token.key,
+                'user_id': user.id,
+                'username': user.username
+            })
+    
+        return Response({
+            'status': 'error',
+            'message': 'Invalid credentials'
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
 class ProcessSerializer(serializers.Serializer):
     pid = serializers.IntegerField()

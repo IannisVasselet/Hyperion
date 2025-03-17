@@ -4,7 +4,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ProcessViewSet, ServiceViewSet, NetworkViewSet,
     SlackNotificationView, EmailNotificationView, SSHCommandView,
-    dashboard, LoginView, LogoutView, TwoFactorSetupView, TwoFactorVerifyView, TwoFactorManageView,
+    dashboard, LoginView, LogoutView, LoginAPIView,
+    TwoFactorSetupView, TwoFactorVerifyView, TwoFactorManageView,
     RoleManagementView, TwoFactorQRView, TwoFactorBackupTokensView
     )
 from . import views
@@ -24,6 +25,7 @@ urlpatterns = [
     
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),
+    path('auth/api-login/', LoginAPIView.as_view(), name='api-login'),
     
     path('auth/2fa/setup/', TwoFactorSetupView.as_view(), name='2fa-setup'),
     path('auth/2fa/verify/', TwoFactorVerifyView.as_view(), name='2fa-verify'),
