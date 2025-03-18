@@ -6,11 +6,23 @@ from django.http import JsonResponse
 
 from api.models import UserProfile
 
+from rest_framework.authtoken.models import Token
+
 class AuthenticationMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+        # Vérifier l'en-tête d'authentification pour les tokens
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        if auth_header and auth_header.startswith('Token '):
+            token_key = auth_header.split(' ')[1]
+            try:
+                token = Token.objects.get(key=token_key)
+                # Attacher l'utilisateur à la requête
+                request.user = token.user
+            except Token.DoesNotExist:
+                pass
         # Paths that don't require authentication
         exempt_paths = [
             reverse('login'),
