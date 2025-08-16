@@ -1,0 +1,26 @@
+{
+  "urls": [
+    "http://localhost:8000/dashboard/",
+    "http://localhost:8000/auth/login/",
+    "http://localhost:8000/2fa/setup/",
+    "http://localhost:8000/ssh/",
+    "http://localhost:8000/roles/",
+    "http://localhost:8000/admin/"
+  ],
+  "defaults": {
+    "timeout": 30000,
+    "wait": 2000,
+    "standard": "WCAG2AA",
+    "level": "error",
+    "includeNotices": false,
+    "includeWarnings": true,
+    "chromeLaunchConfig": {
+      "ignoreHTTPSErrors": true
+    }
+  },
+  "ignore": [
+    "notice",
+    "WCAG2AA.Principle1.Guideline1_1.1_1_1.H67.2",
+    "WCAG2AA.Principle4.Guideline4_1.4_1_2.H91.A.EmptyNoId"
+  ]
+}
