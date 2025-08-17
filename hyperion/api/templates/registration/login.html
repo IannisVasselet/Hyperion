@@ -1,62 +1,325 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Login - Hyperion</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Hyperion</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/accessibility.css' %}">
     <style>
         .login-container {
             max-width: 400px;
             margin: 100px auto;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             background: #fff;
+            border: 1px solid #e0e0e0;
         }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .login-subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+        
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        .form-group label {
+        
+        .form-label {
             display: block;
-            margin-bottom: 5px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1rem;
         }
-        .form-group input {
+        
+        .form-input {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
         }
+        
+        .form-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+        
+        .form-input.error {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        
         .submit-btn {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background: #007bff;
             color: white;
-            border: none;
-            border-radius: 4px;
+            border: 2px solid #007bff;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            min-height: 48px;
         }
+        
+        .submit-btn:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+        }
+        
+        .submit-btn:focus {
+            outline: 3px solid #ffc107;
+            outline-offset: 2px;
+        }
+        
         .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            font-weight: 500;
+        }
+        
+        .form-help {
+            color: #666;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+        
+        .required-indicator {
             color: #dc3545;
-            margin-bottom: 10px;
+            font-weight: bold;
+            margin-left: 3px;
+        }
+        
+        .skip-links {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #000;
+            color: #fff;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 0 0 4px 4px;
+        }
+        
+        .skip-link:focus {
+            top: 0;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login to Hyperion</h2>
-        {% if error_message %}
-        <div class="error-message">{{ error_message }}</div>
-        {% endif %}
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" required>
-            </div>
-            <button type="submit" class="submit-btn">Login</button>
-        </form>
+    <!-- Skip Links -->
+    <div class="skip-links">
+        <a href="#main-content" class="skip-link">Aller au contenu principal</a>
     </div>
+    
+    <!-- Zone pour les annonces aux lecteurs d'écran -->
+    <div id="status-messages" aria-live="polite" aria-atomic="false" class="sr-only"></div>
+    <div id="alert-messages" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+    <main id="main-content" role="main" aria-labelledby="login-title">
+        <div class="login-container">
+            <header class="login-header">
+                <h1 id="login-title">
+                    Connexion à Hyperion
+                </h1>
+                <p class="login-subtitle">
+                    Système de monitoring et gestion serveur
+                </p>
+            </header>
+
+            {% if error_message %}
+            <div class="error-message" role="alert" aria-describedby="login-error">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                <span id="login-error">{{ error_message }}</span>
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate aria-labelledby="login-title">
+                {% csrf_token %}
+                
+                <fieldset>
+                    <legend class="sr-only">Informations de connexion</legend>
+                    
+                    <div class="form-group">
+                        <label for="id_username" class="form-label">
+                            Nom d'utilisateur
+                            <span class="required-indicator" aria-label="obligatoire">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="id_username" 
+                            name="username" 
+                            class="form-input"
+                            required
+                            autocomplete="username"
+                            aria-describedby="username-help username-error"
+                            {% if form.username.errors %}aria-invalid="true"{% endif %}
+                        >
+                        <div id="username-help" class="form-help">
+                            Saisissez votre nom d'utilisateur
+                        </div>
+                        {% if form.username.errors %}
+                        <div id="username-error" class="form-error" role="alert">
+                            {{ form.username.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password" class="form-label">
+                            Mot de passe
+                            <span class="required-indicator" aria-label="obligatoire">*</span>
+                        </label>
+                        <input 
+                            type="password" 
+                            id="id_password" 
+                            name="password" 
+                            class="form-input"
+                            required
+                            autocomplete="current-password"
+                            aria-describedby="password-help password-error"
+                            {% if form.password.errors %}aria-invalid="true"{% endif %}
+                        >
+                        <div id="password-help" class="form-help">
+                            Saisissez votre mot de passe
+                        </div>
+                        {% if form.password.errors %}
+                        <div id="password-error" class="form-error" role="alert">
+                            {{ form.password.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </fieldset>
+
+                <button 
+                    type="submit" 
+                    class="submit-btn accessible-button"
+                    aria-describedby="login-help"
+                >
+                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                    Se connecter
+                </button>
+                
+                <div id="login-help" class="form-help" style="text-align: center; margin-top: 10px;">
+                    Cliquez pour vous connecter au système Hyperion
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Scripts d'accessibilité -->
+    <script src="{% static 'js/accessibility.js' %}"></script>
+    
+    <script>
+        // Validation et amélioration du formulaire de connexion
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const usernameInput = document.getElementById('id_username');
+            const passwordInput = document.getElementById('id_password');
+            
+            // Focus automatique sur le premier champ si pas d'erreur
+            if (!usernameInput.value) {
+                usernameInput.focus();
+            }
+            
+            // Validation en temps réel
+            function validateField(input, minLength = 1) {
+                const value = input.value.trim();
+                const errorElement = document.getElementById(input.id + '-error');
+                
+                if (value.length === 0) {
+                    input.setAttribute('aria-invalid', 'true');
+                    input.classList.add('error');
+                    return false;
+                } else if (input.type === 'password' && value.length < 3) {
+                    input.setAttribute('aria-invalid', 'true');
+                    input.classList.add('error');
+                    return false;
+                } else {
+                    input.removeAttribute('aria-invalid');
+                    input.classList.remove('error');
+                    return true;
+                }
+            }
+            
+            // Validation au blur
+            usernameInput.addEventListener('blur', () => validateField(usernameInput));
+            passwordInput.addEventListener('blur', () => validateField(passwordInput));
+            
+            // Validation à la soumission
+            form.addEventListener('submit', function(e) {
+                const isUsernameValid = validateField(usernameInput);
+                const isPasswordValid = validateField(passwordInput);
+                
+                if (!isUsernameValid || !isPasswordValid) {
+                    e.preventDefault();
+                    
+                    // Focus sur le premier champ invalide
+                    const firstInvalid = form.querySelector('[aria-invalid="true"]');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                    
+                    // Annoncer l'erreur
+                    if (window.accessibilityManager) {
+                        window.accessibilityManager.announceAlert(
+                            'Erreurs dans le formulaire. Veuillez corriger les champs marqués.'
+                        );
+                    }
+                }
+            });
+            
+            // Messages d'aide contextuelle
+            function addContextualHelp() {
+                usernameInput.addEventListener('focus', () => {
+                    if (window.accessibilityManager) {
+                        window.accessibilityManager.announceToScreenReader(
+                            'Champ nom d\'utilisateur sélectionné'
+                        );
+                    }
+                });
+                
+                passwordInput.addEventListener('focus', () => {
+                    if (window.accessibilityManager) {
+                        window.accessibilityManager.announceToScreenReader(
+                            'Champ mot de passe sélectionné'
+                        );
+                    }
+                });
+            }
+            
+            // Appliquer les améliorations après l'initialisation de l'AccessibilityManager
+            setTimeout(addContextualHelp, 500);
+        });
+    </script>
 </body>
 </html>

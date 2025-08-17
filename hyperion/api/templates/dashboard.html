@@ -11,118 +11,289 @@
 <script id="network-data" type="application/json">
   [{ "recorded_at": "2023-10-01T00:00:00Z", "usage": 10 }]
 </script>
-<div class="main-content">
+<div class="main-content" role="main" aria-label="Contenu principal du tableau de bord" id="main-content">
   <header>
     <h1>Hyperion Dashboard</h1>
-    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+    <button class="theme-toggle accessible-button" onclick="toggleTheme()" aria-label="Basculer le thème clair/sombre" tabindex="0">
+      <i class="fas fa-adjust" aria-hidden="true"></i>
+      <span>Toggle Theme</span>
+    </button>
   </header>
   <main>
-    <!-- Processes table below -->
-    <div class="container">
+    <!-- Section des processus -->
+    <section class="container" id="monitoring" aria-labelledby="processes-title">
       <div class="widget" id="processes">
-        <h3>Processes</h3>
-        <h4>Features:</h4>
+        <h2 id="processes-title">Processus système</h2>
+        <p class="widget-description">
+          Surveillance et gestion des processus en cours d'exécution sur le système.
+        </p>
+        
+        <h3>Fonctionnalités :</h3>
         <ul>
-          <li>Filter processes by name</li>
-          <li>Sort processes by CPU, Memory, Name</li>
-          <li>Display process details (Name, PID, Status, CPU%, Memory%)</li>
-          <li>Process management actions (stop, restart, priority modification)</li>
-          <li>Real-time updates via ProcessConsumer WebSocket</li>
-        <div class="controls">
-          <input
-            type="text"
-            id="processFilter"
-            name="process_filter"
-            placeholder="Filter processes..."
-            onkeyup="filterProcesses()"
-          />
-          <select id="processSorting" onchange="sortProcesses()" id="processSorting" name="process_sorting" >
-            <option value="cpu">Sort by CPU</option>
-            <option value="memory">Sort by Memory</option>
-            <option value="name">Sort by Name</option>
-          </select>
-        </div>
-        <div class="scrollable-list">
-          <table class="process-table" style="width: 100%; table-layout: fixed">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>PID</th>
-                <th>Status</th>
-                <th>CPU %</th>
-                <th>Memory %</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="processesTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-      <!-- Services table below -->
-      <div class="widget" id="services">
-        <h3>Services</h3>
-        <h4>Features:</h4>
-        <ul>
-          <li>Display service details (Name, Status)</li>
-          <li>Service management actions (start, stop, restart)</li>
-          <li>Real-time updates via ServiceConsumer WebSocket</li>
-          <li>Service status indicators</li>
-          <li>Service name listing</li>
+          <li>Filtrage des processus par nom</li>
+          <li>Tri par CPU, Mémoire, Nom</li>
+          <li>Affichage des détails (Nom, PID, Statut, CPU%, Mémoire%)</li>
+          <li>Actions de gestion (arrêt, redémarrage, modification de priorité)</li>
+          <li>Mises à jour en temps réel via WebSocket</li>
         </ul>
-        <div class="scrollable-list">
-          <table class="service-table" style="width: 100%; table-layout: fixed">
+
+        <div class="controls" role="group" aria-labelledby="process-controls-label">
+          <h4 id="process-controls-label" class="sr-only">Contrôles des processus</h4>
+          
+          <div class="form-group">
+            <label for="processFilter" class="form-label">Filtrer les processus</label>
+            <input
+              type="text"
+              id="processFilter"
+              name="process_filter"
+              class="form-input"
+              placeholder="Nom du processus..."
+              onkeyup="filterProcesses()"
+              aria-describedby="processFilter-help"
+            />
+            <div id="processFilter-help" class="form-help">
+              Tapez le nom d'un processus pour le filtrer dans la liste
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="processSorting" class="form-label">Trier par</label>
+            <select 
+              id="processSorting" 
+              name="process_sorting" 
+              class="form-input"
+              onchange="sortProcesses()"
+              aria-describedby="processSorting-help"
+            >
+              <option value="cpu">Utilisation CPU</option>
+              <option value="memory">Utilisation mémoire</option>
+              <option value="name">Nom du processus</option>
+            </select>
+            <div id="processSorting-help" class="form-help">
+              Sélectionnez le critère de tri pour organiser la liste
+            </div>
+          </div>
+        </div>
+
+        <div class="scrollable-list" role="region" aria-labelledby="processes-table-caption">
+          <table class="process-table accessible-table" style="width: 100%; table-layout: fixed">
+            <caption id="processes-table-caption">
+              Liste des processus système avec leurs statistiques d'utilisation
+            </caption>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th scope="col" id="process-name">
+                  <button class="table-sort-button" onclick="sortProcesses('name')" 
+                          aria-label="Trier par nom de processus">
+                    Nom <i class="fas fa-sort" aria-hidden="true"></i>
+                  </button>
+                </th>
+                <th scope="col" id="process-pid">PID</th>
+                <th scope="col" id="process-status">Statut</th>
+                <th scope="col" id="process-cpu">
+                  <button class="table-sort-button" onclick="sortProcesses('cpu')" 
+                          aria-label="Trier par utilisation CPU">
+                    CPU % <i class="fas fa-sort" aria-hidden="true"></i>
+                  </button>
+                </th>
+                <th scope="col" id="process-memory">
+                  <button class="table-sort-button" onclick="sortProcesses('memory')" 
+                          aria-label="Trier par utilisation mémoire">
+                    Mémoire % <i class="fas fa-sort" aria-hidden="true"></i>
+                  </button>
+                </th>
+                <th scope="col" id="process-actions">Actions</th>
               </tr>
             </thead>
-            <tbody id="servicesTableBody"></tbody>
+            <tbody id="processesTableBody" aria-live="polite" aria-atomic="false">
+              <!-- Les processus seront injectés ici via JavaScript -->
+              <tr class="loading-row">
+                <td colspan="6" role="status" aria-label="Chargement des processus en cours">
+                  <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                  Chargement des processus...
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
+      <!-- Section des services -->
+      <section class="widget" id="services" aria-labelledby="services-title">
+        <h2 id="services-title">Services système</h2>
+        <p class="widget-description">
+          Gestion et surveillance des services système actifs.
+        </p>
+        
+        <h3>Fonctionnalités :</h3>
+        <ul>
+          <li>Affichage des détails des services (Nom, Statut)</li>
+          <li>Actions de gestion (démarrer, arrêter, redémarrer)</li>
+          <li>Mises à jour en temps réel via WebSocket</li>
+          <li>Indicateurs de statut visuels</li>
+          <li>Liste complète des services</li>
+        </ul>
 
-      <!-- Charts below -->
-      <div class="charts-container">
+        <div class="scrollable-list" role="region" aria-labelledby="services-table-caption">
+          <table class="service-table accessible-table" style="width: 100%; table-layout: fixed">
+            <caption id="services-table-caption">
+              Liste des services système et de leur statut
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col" id="service-name">Nom du service</th>
+                <th scope="col" id="service-status">Statut</th>
+                <th scope="col" id="service-actions">Actions disponibles</th>
+              </tr>
+            </thead>
+            <tbody id="servicesTableBody" aria-live="polite" aria-atomic="false">
+              <!-- Les services seront injectés ici via JavaScript -->
+              <tr class="loading-row">
+                <td colspan="3" role="status" aria-label="Chargement des services en cours">
+                  <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                  Chargement des services...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section des graphiques -->
+      <section class="charts-container" aria-labelledby="metrics-title">
         <div class="widget">
-          <h3>System Metrics</h3>
-          <h4>Features:</h4>
+          <h2 id="metrics-title">Métriques système</h2>
+          <p class="widget-description">
+            Graphiques en temps réel de l'utilisation des ressources système.
+          </p>
+          
+          <h3>Fonctionnalités :</h3>
           <ul>
-            <li>Real-time CPU, Memory, Network usage charts</li>
-            <li>Switch between CPU, Memory, Network charts</li>
-            <li>Responsive chart design</li>
-            <li>Real-time updates via CPU, Memory, Network consumers</li>
+            <li>Graphiques temps réel CPU, Mémoire, Réseau</li>
+            <li>Basculement entre les différents graphiques</li>
+            <li>Design adaptatif</li>
+            <li>Mises à jour en temps réel via WebSocket</li>
           </ul>
-          <div class="chart-controls">
-            <select id="chartSelector" onchange="switchChart()" id="chartSelector" name="chart_selector">
-              <option value="cpu">CPU Usage</option>
-              <option value="memory">Memory Usage</option>
-              <option value="network">Network Usage</option>
-            </select>
+
+          <div class="chart-controls" role="group" aria-labelledby="chart-controls-label">
+            <h4 id="chart-controls-label">Sélection du graphique</h4>
+            
+            <div class="form-group">
+              <label for="chartSelector" class="form-label">Type de métrique</label>
+              <select 
+                id="chartSelector" 
+                name="chart_selector" 
+                class="form-input"
+                onchange="switchChart()"
+                aria-describedby="chartSelector-help"
+              >
+                <option value="cpu">Utilisation CPU</option>
+                <option value="memory">Utilisation mémoire</option>
+                <option value="network">Utilisation réseau</option>
+              </select>
+              <div id="chartSelector-help" class="form-help">
+                Sélectionnez la métrique à afficher dans le graphique
+              </div>
+            </div>
           </div>
-          <div>
-            <!-- Chart containers -->
+
+          <div role="region" aria-labelledby="current-chart-title">
+            <h3 id="current-chart-title">Graphique d'utilisation CPU</h3>
+            
+            <!-- Conteneurs de graphiques accessibles -->
             <div
               id="cpuChartContainer"
               class="chart-container"
               style="height: 300px"
+              role="img"
+              aria-labelledby="cpu-chart-title"
+              aria-describedby="cpu-chart-description"
             >
-              <canvas id="cpuChart"></canvas>
+              <h4 id="cpu-chart-title" class="sr-only">Graphique d'utilisation CPU</h4>
+              <canvas 
+                id="cpuChart"
+                role="img"
+                aria-label="Graphique en temps réel de l'utilisation CPU"
+                tabindex="0"
+              ></canvas>
+              <div id="cpu-chart-description" class="chart-description sr-only">
+                Évolution de l'utilisation du processeur au cours du temps, 
+                exprimée en pourcentage de 0 à 100%.
+              </div>
             </div>
+
             <div
               id="memoryChartContainer"
               class="chart-container"
               style="display: none; height: 300px"
+              role="img"
+              aria-labelledby="memory-chart-title"
+              aria-describedby="memory-chart-description"
             >
-              <canvas id="memoryChart"></canvas>
+              <h4 id="memory-chart-title" class="sr-only">Graphique d'utilisation mémoire</h4>
+              <canvas 
+                id="memoryChart"
+                role="img"
+                aria-label="Graphique en temps réel de l'utilisation mémoire"
+                tabindex="0"
+              ></canvas>
+              <div id="memory-chart-description" class="chart-description sr-only">
+                Évolution de l'utilisation de la mémoire vive au cours du temps, 
+                exprimée en pourcentage de 0 à 100%.
+              </div>
             </div>
+
             <div
               id="networkChartContainer"
               class="chart-container"
               style="display: none"
+              role="img"
+              aria-labelledby="network-chart-title"
+              aria-describedby="network-chart-description"
             >
-              <canvas id="networkChart"></canvas>
+              <h4 id="network-chart-title" class="sr-only">Graphique d'utilisation réseau</h4>
+              <canvas 
+                id="networkChart"
+                role="img"
+                aria-label="Graphique en temps réel de l'utilisation réseau"
+                tabindex="0"
+              ></canvas>
+              <div id="network-chart-description" class="chart-description sr-only">
+                Évolution du trafic réseau au cours du temps, 
+                exprimé en pourcentage de bande passante utilisée.
+              </div>
+            </div>
+
+            <!-- Contrôles d'accessibilité pour les graphiques -->
+            <div class="chart-accessibility-controls">
+              <button 
+                type="button" 
+                class="accessible-button" 
+                onclick="toggleChartData()"
+                aria-expanded="false"
+                aria-controls="chart-data-table"
+                aria-label="Afficher les données du graphique sous forme de tableau"
+              >
+                <i class="fas fa-table" aria-hidden="true"></i>
+                <span>Voir les données</span>
+              </button>
+              
+              <div id="chart-data-table" class="chart-data-table" style="display: none;">
+                <table class="accessible-table">
+                  <caption>Données numériques du graphique actuel</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Temps</th>
+                      <th scope="col">Valeur (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="chartDataTableBody" aria-live="polite">
+                    <!-- Données injectées par JavaScript -->
+                    <tr>
+                      <td colspan="2">Aucune donnée disponible</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -1014,5 +1185,137 @@
           }
       });
   });
+
+  // ==========================================
+  // SCRIPTS D'ACCESSIBILITÉ DASHBOARD
+  // ==========================================
+</script>
+
+<!-- Scripts d'accessibilité spécifiques au dashboard -->
+{% load static %}
+<script src="{% static 'js/dashboard-accessibility.js' %}"></script>
+
+<script>
+  // Améliorer l'accessibilité des fonctions existantes
+  
+  // Override de switchChart pour l'accessibilité
+  const originalSwitchChart = window.switchChart;
+  window.switchChart = function() {
+    if (originalSwitchChart) {
+      originalSwitchChart();
+    }
+    
+    // Notifier le changement pour l'accessibilité
+    if (window.dashboardAccessibility) {
+      const selector = document.getElementById('chartSelector');
+      if (selector) {
+        window.dashboardAccessibility.handleChartChange(selector.value);
+      }
+    }
+  };
+
+  // Override des fonctions de filtrage et tri pour l'accessibilité
+  const originalFilterProcesses = window.filterProcesses;
+  window.filterProcesses = function() {
+    if (originalFilterProcesses) {
+      originalFilterProcesses();
+    }
+    
+    // Annoncer le résultat du filtrage
+    setTimeout(() => {
+      const visibleRows = document.querySelectorAll('#processesTableBody tr:not([style*="display: none"]):not(.loading-row)');
+      const count = visibleRows.length;
+      const message = count === 0 ? 
+        'Aucun processus trouvé avec ce filtre' : 
+        `${count} processus ${count > 1 ? 'trouvés' : 'trouvé'}`;
+      
+      if (window.accessibilityManager) {
+        window.accessibilityManager.announceToScreenReader(message);
+      }
+    }, 100);
+  };
+
+  const originalSortProcesses = window.sortProcesses;
+  window.sortProcesses = function(sortType) {
+    if (originalSortProcesses) {
+      originalSortProcesses(sortType);
+    }
+    
+    // Notifier le tri
+    if (window.dashboardAccessibility) {
+      window.dashboardAccessibility.announceSort(sortType);
+    }
+  };
+
+  // Améliorer les WebSocket updates pour l'accessibilité
+  function enhanceWebSocketForAccessibility(socket, dataType) {
+    const originalOnMessage = socket.onmessage;
+    
+    socket.onmessage = function(e) {
+      if (originalOnMessage) {
+        originalOnMessage.call(this, e);
+      }
+      
+      // Mettre à jour les données pour l'accessibilité
+      try {
+        const data = JSON.parse(e.data);
+        if (window.dashboardAccessibility && data.type && data.data) {
+          // Mettre à jour les données de graphique si disponibles
+          if (dataType === 'cpu' || dataType === 'memory' || dataType === 'network') {
+            window.dashboardAccessibility.updateChartData(dataType, [data.data]);
+          }
+        }
+      } catch (err) {
+        console.log('Erreur parsing WebSocket data pour accessibilité:', err);
+      }
+    };
+  }
+
+  // Appliquer les améliorations aux WebSockets existants
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+      // Améliorer les connexions WebSocket si elles existent
+      if (window.cpuSocket) enhanceWebSocketForAccessibility(window.cpuSocket, 'cpu');
+      if (window.memorySocket) enhanceWebSocketForAccessibility(window.memorySocket, 'memory');
+      if (window.networkSocket) enhanceWebSocketForAccessibility(window.networkSocket, 'network');
+    }, 1000);
+  });
+
+  // Fonction d'aide pour créer des boutons d'action accessibles
+  function createAccessibleActionButton(text, onClick, ariaLabel) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.className = 'accessible-button';
+    button.setAttribute('aria-label', ariaLabel || text);
+    button.addEventListener('click', onClick);
+    return button;
+  }
+
+  // Améliorer les boutons d'action dynamiques
+  function enhanceActionButtons() {
+    const actionButtons = document.querySelectorAll('tbody button:not([aria-label])');
+    actionButtons.forEach(button => {
+      const text = button.textContent.trim();
+      const row = button.closest('tr');
+      const itemName = row?.querySelector('td:first-child')?.textContent.trim();
+      
+      if (itemName && text) {
+        const actionLabels = {
+          'Stop': `Arrêter ${itemName}`,
+          'Start': `Démarrer ${itemName}`,
+          'Restart': `Redémarrer ${itemName}`,
+          'Kill': `Terminer ${itemName}`,
+          'Terminate': `Terminer ${itemName}`
+        };
+        
+        const label = actionLabels[text] || `${text} ${itemName}`;
+        button.setAttribute('aria-label', label);
+        button.classList.add('accessible-button');
+      }
+    });
+  }
+
+  // Appliquer les améliorations périodiquement pour les éléments dynamiques
+  setInterval(enhanceActionButtons, 2000);
 </script>
 {% endblock %}

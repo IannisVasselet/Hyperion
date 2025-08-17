@@ -1,0 +1,388 @@
+/* ==========================================
+   HYPERION - STYLES D'ACCESSIBILITÉ RGAA 4.1
+   ========================================== */
+
+/* 1. CLASSES POUR LECTEURS D'ÉCRAN */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.sr-only-focusable:focus {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0.5rem 1rem !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    text-decoration: none !important;
+    z-index: 9999 !important;
+}
+
+/* 2. SKIP LINKS */
+.skip-links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background: transparent;
+}
+
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #000;
+    color: #fff;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: bold;
+    transition: top 0.3s;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* 3. INDICATEURS DE FOCUS VISIBLES */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[tabindex]:focus {
+    outline: 3px solid #005fcc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 5px #005fcc !important;
+}
+
+/* Focus spécial pour les éléments interactifs dans la navigation */
+.nav-menu a:focus {
+    background-color: #005fcc;
+    color: #fff;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* 4. CONTRASTE ET LISIBILITÉ */
+/* Mode haute visibilité */
+.high-contrast {
+    background: #000 !important;
+    color: #fff !important;
+}
+
+.high-contrast a {
+    color: #ffff00 !important;
+}
+
+.high-contrast button {
+    background: #fff !important;
+    color: #000 !important;
+    border: 2px solid #fff !important;
+}
+
+.high-contrast .nav-menu {
+    background: #000 !important;
+    border-right: 3px solid #fff !important;
+}
+
+.high-contrast .widget {
+    background: #000 !important;
+    border: 2px solid #fff !important;
+}
+
+/* 5. CONTRÔLES ACCESSIBLES */
+/* Boutons avec indicateurs visuels */
+.accessible-button {
+    min-height: 44px;
+    min-width: 44px;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.accessible-button:hover {
+    border-color: #005fcc;
+    background-color: #f0f8ff;
+}
+
+.accessible-button:active {
+    transform: scale(0.98);
+}
+
+/* 6. FORMULAIRES ACCESSIBLES */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    border-color: #005fcc;
+    box-shadow: 0 0 0 3px rgba(0, 95, 204, 0.2);
+}
+
+.form-input.error {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.form-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-error::before {
+    content: "⚠️";
+    margin-right: 0.5rem;
+}
+
+.form-help {
+    color: #666;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* 7. TABLEAUX ACCESSIBLES */
+.accessible-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+.accessible-table caption {
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.accessible-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    text-align: left;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+}
+
+.accessible-table td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    vertical-align: top;
+}
+
+.accessible-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.accessible-table tbody tr:hover {
+    background-color: #e3f2fd;
+}
+
+/* 8. ZONES DE MISE À JOUR DYNAMIQUE */
+.live-region {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.status-message {
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    border-left: 4px solid;
+}
+
+.status-message.success {
+    background-color: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.status-message.error {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.status-message.warning {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.status-message.info {
+    background-color: #d1ecf1;
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+/* 9. NAVIGATION ACCESSIBLE */
+.nav-menu[role="navigation"] {
+    position: relative;
+}
+
+.nav-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-menu li {
+    position: relative;
+}
+
+.nav-menu a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-menu a:hover,
+.nav-menu a[aria-current="page"] {
+    background-color: #f0f8ff;
+    border-left-color: #005fcc;
+}
+
+/* 10. GRAPHIQUES ACCESSIBLES */
+.chart-container {
+    position: relative;
+    margin: 1rem 0;
+}
+
+.chart-description {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.chart-data-table {
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* 11. RESPONSIVE ET ZOOM */
+@media (max-width: 768px) {
+    .accessible-button {
+        min-height: 48px;
+        min-width: 48px;
+    }
+    
+    .form-input {
+        font-size: 16px; /* Évite le zoom sur iOS */
+    }
+}
+
+/* Support pour les préférences utilisateur */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #444;
+    }
+}
+
+/* 12. ÉTATS ARIA */
+[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+[aria-hidden="true"] {
+    display: none !important;
+}
+
+[aria-expanded="true"] + .submenu {
+    display: block;
+}
+
+[aria-expanded="false"] + .submenu {
+    display: none;
+}
+
+/* 13. CLASSES UTILITAIRES */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.focus-trap {
+    position: relative;
+}
+
+.landmark {
+    position: relative;
+}
+
+.landmark::before {
+    content: attr(aria-label);
+    position: absolute;
+    top: -30px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.landmark:focus-within::before {
+    opacity: 1;
+}

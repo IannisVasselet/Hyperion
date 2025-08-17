@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,75 +9,89 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
+    <link rel="stylesheet" href="{% load static %}{% static 'css/accessibility.css' %}">
   </head>
   <body>
-    <nav class="nav-menu">
-      <h2>Hyperion</h2>
-      <ul>
-        <li>
-          <a href="{% url 'dashboard' %}">
-            <i class="fas fa-tachometer-alt"></i>
-            Dashboard
+    <!-- Skip Links pour navigation rapide -->
+    <div class="skip-links">
+      <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+      <a href="#navigation" class="skip-link">Aller à la navigation</a>
+    </div>
+
+    <!-- Zones live pour les annonces aux lecteurs d'écran -->
+    <div id="status-messages" aria-live="polite" aria-atomic="false" class="sr-only"></div>
+    <div id="alert-messages" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+    <nav class="nav-menu" role="navigation" aria-label="Navigation principale" id="navigation">
+      <h2>
+        <span class="sr-only">Application </span>Hyperion
+        <span class="sr-only"> - Système de monitoring</span>
+      </h2>
+      <ul role="menubar" aria-label="Menu principal">
+        <li role="none">
+          <a href="{% url 'dashboard' %}" role="menuitem" aria-label="Accéder au tableau de bord" tabindex="0">
+            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+            <span>Dashboard</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'dashboard' %}#monitoring">
-            <i class="fas fa-microchip"></i>
-            Processes
+        <li role="none">
+          <a href="{% url 'dashboard' %}#monitoring" role="menuitem" aria-label="Voir les processus système" tabindex="0">
+            <i class="fas fa-microchip" aria-hidden="true"></i>
+            <span>Processus</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'dashboard' %}#services">
-            <i class="fas fa-cogs"></i>
-            Services
+        <li role="none">
+          <a href="{% url 'dashboard' %}#services" role="menuitem" aria-label="Gérer les services" tabindex="0">
+            <i class="fas fa-cogs" aria-hidden="true"></i>
+            <span>Services</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'dashboard' %}#files">
-            <i class="fas fa-folder"></i>
-            File Management
+        <li role="none">
+          <a href="{% url 'dashboard' %}#files" role="menuitem" aria-label="Accéder à la gestion des fichiers" tabindex="0">
+            <i class="fas fa-folder" aria-hidden="true"></i>
+            <span>Fichiers</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'dashboard' %}#network">
-            <i class="fas fa-network-wired"></i>
-            Network
+        <li role="none">
+          <a href="{% url 'dashboard' %}#network" role="menuitem" aria-label="Voir les informations réseau" tabindex="0">
+            <i class="fas fa-network-wired" aria-hidden="true"></i>
+            <span>Réseau</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'dashboard' %}#shell">
-            <i class="fas fa-terminal"></i>
-            Shell
+        <li role="none">
+          <a href="{% url 'dashboard' %}#shell" role="menuitem" aria-label="Ouvrir le shell système" tabindex="0">
+            <i class="fas fa-terminal" aria-hidden="true"></i>
+            <span>Shell</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'ssh_terminal' %}">
-            <i class="fas fa-terminal"></i>
-            SSH Terminal
+        <li role="none">
+          <a href="{% url 'ssh_terminal' %}" role="menuitem" aria-label="Ouvrir le terminal SSH" tabindex="0">
+            <i class="fas fa-terminal" aria-hidden="true"></i>
+            <span>SSH Terminal</span>
           </a>
         </li>
-        <li>
-          <a href="{% url '2fa-setup' %}">
-            <i class="fas fa-shield-alt"></i>
-            Setup 2FA
+        <li role="none">
+          <a href="{% url '2fa-setup' %}" role="menuitem" aria-label="Configurer l'authentification à deux facteurs" tabindex="0">
+            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+            <span>Setup 2FA</span>
           </a>
         </li>
-        <li>
-          <a href="{% url '2fa-manage' %}">
-            <i class="fas fa-shield-alt"></i>
-            Manage 2FA
+        <li role="none">
+          <a href="{% url '2fa-manage' %}" role="menuitem" aria-label="Gérer l'authentification à deux facteurs" tabindex="0">
+            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+            <span>Manage 2FA</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'role-management' %}">
-            <i class="fas fa-user-shield"></i>
-            Role Management
+        <li role="none">
+          <a href="{% url 'role-management' %}" role="menuitem" aria-label="Gérer les rôles utilisateurs" tabindex="0">
+            <i class="fas fa-user-shield" aria-hidden="true"></i>
+            <span>Gestion des rôles</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'logout' %}">
-            <i class="fas fa-sign-out-alt"></i>
-            Logout
+        <li role="none">
+          <a href="{% url 'logout' %}" role="menuitem" aria-label="Se déconnecter de l'application" tabindex="0">
+            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+            <span>Déconnexion</span>
           </a>
         </li>
       </ul>
@@ -997,4 +1010,20 @@
       }
     }
   </style>
+
+  <!-- Scripts d'accessibilité RGAA 4.1 -->
+  {% load static %}
+  <script src="{% static 'js/accessibility.js' %}"></script>
+  
+  <script>
+    // Initialisation spécifique pour les graphiques
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.accessibilityManager) {
+        // Rendre les graphiques accessibles après leur création
+        setTimeout(() => {
+          window.accessibilityManager.makeChartsAccessible();
+        }, 1000);
+      }
+    });
+  </script>
 </html>
