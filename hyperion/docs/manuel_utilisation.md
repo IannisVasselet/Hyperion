@@ -225,5 +225,3 @@ daphne -b 127.0.0.1 -p 8000 hyperion.asgi:application
 **Contact support :** [À définir selon l'organisation]
 
 ---
-
-> **Note :** Ce manuel est basé sur l'analyse du code source. Certaines fonctionnalités peuvent nécessiter une validation pratique. En cas de divergence entre la documentation et le comportement réel, le test pratique fait référence.
