@@ -46,8 +46,6 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('', home_redirect, name='home'),  # Redirection de la racine vers le dashboard
     path('', include(tf_urls)), 
-    path('jet/', include('jet.urls', 'jet')),
-    path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('api-auth/', include('rest_framework.urls')),
