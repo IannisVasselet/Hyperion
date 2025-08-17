@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from celery.schedules import crontab
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -105,16 +106,11 @@ WSGI_APPLICATION = 'hyperion.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Configuration de base de données avec support des variables d'environnement
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'hyperion_db',
-        'USER': 'your_db_user',
-        'PASSWORD': 'your_db_password',
-        # 'HOST': 'db',  # Utiliser le nom de service Docker pour PostgreSQL
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=f'postgresql://{os.getenv("DB_USER", "your_db_user")}:{os.getenv("DB_PASSWORD", "your_db_password")}@{os.getenv("DB_HOST", "localhost")}:{os.getenv("DB_PORT", "5432")}/{os.getenv("DB_NAME", "hyperion_db")}'
+    )
 }
 
 

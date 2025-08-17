@@ -3,6 +3,7 @@ djangorestframework
 django-jazzmin
 drf-yasg
 django-cors-headers
+dj-database-url
 celery
 django-celery-beat
 django-celery-results
