@@ -159,3 +159,40 @@ class TOTPDevice(models.Model):
     class Meta:
         verbose_name = 'TOTP Device'
         verbose_name_plural = 'TOTP Devices'
+
+class BugReport(models.Model):
+    SEVERITY_CHOICES = [
+        ('critical', 'Critique'),
+        ('major', 'Majeure'),
+        ('minor', 'Mineure'),
+    ]
+    STATUS_CHOICES = [
+        ('open', 'Ouvert'),
+        ('in_progress', 'En cours'),
+        ('resolved', 'Résolu'),
+        ('closed', 'Fermé'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    module_affected = models.CharField(max_length=100)
+    steps_to_reproduce = models.TextField()
+    expected_behavior = models.TextField()
+    actual_behavior = models.TextField()
+    environment = models.JSONField()
+    logs = models.TextField(blank=True)
+    reported_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_bugs')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolution = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Bug Report'
+        verbose_name_plural = 'Bug Reports'
+    
+    def __str__(self):
+        return f"[{self.severity.upper()}] {self.title}"
