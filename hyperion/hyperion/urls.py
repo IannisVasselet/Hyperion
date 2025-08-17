@@ -19,10 +19,15 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
 from two_factor.urls import urlpatterns as tf_urls
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+
+# Vue pour rediriger la racine vers le dashboard
+def home_redirect(request):
+    return redirect('/api/dashboard/')
 
 # Configuration de Swagger/OpenAPI
 schema_view = get_schema_view(
@@ -39,6 +44,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', home_redirect, name='home'),  # Redirection de la racine vers le dashboard
     path('', include(tf_urls)), 
     path('jet/', include('jet.urls', 'jet')),
     path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
