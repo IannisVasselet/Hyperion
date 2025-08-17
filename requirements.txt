@@ -20,5 +20,6 @@ pytest-django
 pytest-asyncio
 selenium
 psutil
-paramiko
+netifaces
+requests
 redis
