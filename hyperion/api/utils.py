@@ -9,6 +9,11 @@ import netifaces
 import paramiko
 import psutil
 
+from rest_framework.views import exception_handler
+from rest_framework.response import Response
+import logging
+
+logger = logging.getLogger('hyperion.api')
 
 def get_processes():
     processes = []
@@ -357,3 +362,43 @@ def get_system_temperatures():
     except Exception as e:
         print(f"Error retrieving system information: {e}")
         return {}
+    
+def custom_exception_handler(exc, context):
+    """Gestionnaire d'exceptions standardisé pour les API"""
+    response = exception_handler(exc, context)
+    
+    # Si une exception n'est pas gérée par DRF, on la log et on renvoie une réponse 500
+    if response is None:
+        logger.error(f"Erreur non gérée: {exc}")
+        return Response(
+            {
+                "success": False,
+                "error": {
+                    "code": "ERROR_500",
+                    "message": "Une erreur serveur s'est produite."
+                }
+            },
+            status=500
+        )
+    
+    # Standardisation des réponses d'erreur
+    status_code = response.status_code
+    error_message = str(exc)
+    
+    if hasattr(exc, 'detail'):
+        error_message = str(exc.detail)
+    
+    error_data = {
+        "success": False,
+        "error": {
+            "code": f"ERROR_{status_code}",
+            "message": error_message,
+        }
+    }
+    
+    # Ajouter des détails spécifiques si disponibles
+    if hasattr(response, 'data') and isinstance(response.data, dict):
+        if 'detail' in response.data:
+            error_data['error']['detail'] = response.data['detail']
+    
+    return Response(error_data, status=status_code)
