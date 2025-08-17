@@ -1,18 +1,30 @@
 .DS_store
-env
+env/
+venv/
+.env
+
+# IDE folders
+.idea/
+.vscode/
 
 # Django project template files
 *.log
 *.pot
 *.pyc
 __pycache__/
-/hyperion/api/__pycache__/
-/hyperion/__pycache__/
-
 
 # Fichier static
-/hyperion/staticfiles
+staticfiles/
 
-# Fichier env 
-*/.env
-*/env
+# Database
+*.db
+*.sqlite3
+celerybeat-schedule*
+
+# Cache files
+.pytest_cache/
+*.swp
+*~
+
+# macOS
+.DS_Store
