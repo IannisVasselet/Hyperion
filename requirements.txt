@@ -1,6 +1,8 @@
 Django>=3.2,<4.0
 djangorestframework
 django-jet
+drf-yasg
+django-cors-headers
 celery
 django-celery-beat
 django-celery-results
